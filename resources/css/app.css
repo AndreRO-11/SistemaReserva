@@ -1,0 +1,56 @@
+
+.contenido {
+    padding-top: 200px;
+    padding-bottom: 75px;
+}
+
+/* Header */
+.header {
+    display: block;
+    width: 100%;
+    height: 190px;
+    background-color: white;
+}
+
+.container_header {
+    display: flex;
+    padding: 15px 50px;
+    justify-content: space-between;
+}
+
+.header img {
+    height: 90px;
+}
+
+.navbar {
+    background-color: #1B2E51;
+    height: 70px;
+}
+
+.navbar a {
+    color: white;
+    font-size: medium;
+    font-weight: bold;
+}
+
+.navbar a:hover {
+    color: white;
+}
+/* Fin header */
+
+/* Container botones de opciones */
+.opciones_boton {
+    display: flex;
+    justify-content: center;
+}
+
+.opciones_boton form,
+button,
+input {
+    margin: 0 2px;
+}
+
+.agregar_button {
+    display: flex;
+    justify-content: end;
+}
