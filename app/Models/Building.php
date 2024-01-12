@@ -16,4 +16,10 @@ class Building extends Model
         'city',
         'active'
     ];
+
+    // 1:N
+    public function places()
+    {
+        return $this->belongsToMany(Place::class);
+    }
 }

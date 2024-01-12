@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Buildings;
+use App\Livewire\Places;
 use App\Livewire\Seats;
 use App\Livewire\Services;
 use App\Livewire\Types;
@@ -29,6 +30,8 @@ Route::get('buildings', Buildings::class);
 Route::get('/seats', Seats::class);
 Route::get('/types', Types::class);
 Route::get('/services', Services::class);
+Route::get('/places', Places::class);
+
 
 
 

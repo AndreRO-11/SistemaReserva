@@ -13,7 +13,11 @@
             </div>
         </form>
 
-        @if (!empty($seats))
+        @if (empty($seats))
+        <div class="text-center mt-3">
+            <h5>No existen registros.</h5>
+        </div>
+        @else
         <div class="table-responsive mt-3">
             <table class="table table-hover align-middle">
                 <thead>
@@ -29,7 +33,7 @@
                             @if ($editSeat !== $seat->id)
                             {{ $seat->seat }}
                             @else
-                            <input wire:model="seat" type="text" class="form-control" required>
+                            <input wire:model="seat" type="text" class="form-control @error('seat') is-invalid @enderror" required>
                             @endif
                         </td>
 
@@ -47,10 +51,6 @@
                     @endforeach
                 </tbody>
             </table>
-        </div>
-        @else
-        <div class="text-center mt-3">
-            <h5>No existen registros.</h5>
         </div>
         @endif
 

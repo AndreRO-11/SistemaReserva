@@ -9,4 +9,10 @@ class Type extends Model
 {
     use HasFactory;
     protected $fillable = ['type'];
+
+    // 1:1
+    public function place()
+    {
+        return $this->belongsTo(Place::class);
+    }
 }
