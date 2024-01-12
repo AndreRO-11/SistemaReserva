@@ -3,15 +3,18 @@
 namespace App\Livewire;
 
 use App\Models\Service;
-use Livewire\Attributes\Validate;
+use Livewire\Attributes\Rule;
 use Livewire\Component;
 
 class Services extends Component
 {
     public $editService = null;
     public $services;
+    public $confirmation = false;
 
-    #[Validate('required')]
+    #[Rule([
+        'serviceEdit.service' => 'required'
+    ])]
     public $serviceEdit = [
         'service' => '',
         'description' => ''
@@ -48,12 +51,18 @@ class Services extends Component
         $this->editService = null;
     }
 
+    public function close()
+    {
+        $this->editService = null;
+    }
+
     public function delete($id)
     {
         $service = Service::find($id);
         $service->update([
             'active' => false
         ]);
+        $this->render();
     }
 
     public function render()

@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Seat extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = ['seat'];
+
+    // 1:1
+    public function place()
+    {
+        return $this->belongsTo(Place::class);
+    }
 }

@@ -5,13 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Emails extends Model
+class Detail extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'reservation',
-        'reservation,_status',
-        'attendance',
-        'attendance_confirmation'
+        'detail'
     ];
+
+    // N:M
+    public function place()
+    {
+        return $this->belongsToMany(Place::class);
+    }
 }
