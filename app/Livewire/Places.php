@@ -7,6 +7,7 @@ use App\Models\Detail;
 use App\Models\Place;
 use App\Models\Seat;
 use App\Models\Type;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 
@@ -20,17 +21,17 @@ class Places extends Component
         'placeEdit.code' => 'required',
         'placeEdit.capacity' => 'required',
         'placeEdit.floor' => 'required',
-        'placeEdit.types_id' => 'required',
-        'placeEdit.seats_id' => 'required',
-        'placeEdit.buildings_id' => 'required',
+        'placeEdit.type_id' => 'required',
+        'placeEdit.seat_id' => 'required',
+        'placeEdit.building_id' => 'required',
     ])]
     public $placeEdit = [
         'code' => '',
-        'capacity' => null,
+        'capacity' => '',
         'floor' => '',
-        'types_id' => '',
-        'seats_id' => '',
-        'buildings_id' => ''
+        'type_id' => '',
+        'seat_id' => '',
+        'building_id' => ''
     ];
 
     public function store()
@@ -40,35 +41,59 @@ class Places extends Component
             'code' => $this->placeEdit['code'],
             'capacity' => $this->placeEdit['capacity'],
             'floor' => $this->placeEdit['floor'],
-            'types_id' => $this->placeEdit['types_id'],
-            'seats_id' => $this->placeEdit['seats_id'],
-            'buildings_id' => $this->placeEdit['buildings_id'],
+            'type_id' => $this->placeEdit['type_id'],
+            'seat_id' => $this->placeEdit['seat_id'],
+            'building_id' => $this->placeEdit['building_id'],
             'active' => true,
         ]);
-        $place->placeDetails()->attach($this->selectedDetails);
-        dd($place);
+        $place->details()->attach($this->selectedDetails);
         $this->reset();
+        $this->dispatch('close-modal');
     }
 
     public function edit($id)
     {
         $this->editPlace = $id;
         $place = Place::find($id);
-
-
+        $this->placeEdit['code'] = $place->code;
+        $this->placeEdit['capacity'] = $place->capacity;
+        $this->placeEdit['floor'] = $place->floor;
+        $this->placeEdit['type_id'] = $place->type_id;
+        $this->placeEdit['seat_id'] = $place->seat_id;
+        $this->placeEdit['building_id'] = $place->building_id;
+        $this->selectedDetails = $place->details->pluck('id')->toArray();
     }
 
     public function update()
     {
         $this->validate();
+        $place = Place::find($this->editPlace);
+        $place->update([
+            'code' => $this->placeEdit['code'],
+            'capacity' => $this->placeEdit['capacity'],
+            'floor' => $this->placeEdit['floor'],
+            'type_id' => $this->placeEdit['type_id'],
+            'seat_id' => $this->placeEdit['seat_id'],
+            'building_id' => $this->placeEdit['building_id']
+        ]);
+        $place->details()->sync($this->selectedDetails);
+        $this->reset();
+        $this->editPlace = null;
+        $this->dispatch('close-modal');
     }
 
     public function delete($id)
     {
-        $place = Place::find();
+        $place = Place::find($id);
         $place->update([
             'active' => false
         ]);
+    }
+
+    #[On('reset-modal')]
+    public function close()
+    {
+        $this->reset();
     }
 
     public function render()
@@ -80,9 +105,9 @@ class Places extends Component
 
 
         $this->places = Place::where('places.active', true)
-        ->join('place_detail','place_detail.places_id', 'places.id')
-        ->join('buildings','buildings.id','places.buildings_id')
-        ->get();
+            ->with('details', 'building')
+            ->get();
+
         return view('livewire.places', [
             'details' => $this->details,
             'places' => $this->places,

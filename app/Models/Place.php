@@ -10,18 +10,18 @@ class Place extends Model
     use HasFactory;
     protected $fillable = [
         'code',
-        'capaciy',
+        'capacity',
         'floor',
         'active',
-        'types_id',
-        'buildings_id',
-        'seats_id'
+        'type_id',
+        'building_id',
+        'seat_id'
     ];
 
     // 1:1
     public function building()
     {
-        return $this->belongsToTo(Building::class);
+        return $this->belongsTo(Building::class);
     }
     public function seat()
     {
@@ -33,7 +33,7 @@ class Place extends Model
     }
 
     // N:M
-    public function placeDetails()
+    public function details()
     {
         return $this->belongsToMany(Detail::class);
     }
