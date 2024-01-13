@@ -19,15 +19,12 @@ return new class extends Migration
             $table->integer('floor');
             $table->boolean('active');
 
-            $table->unsignedBigInteger('types_id');
-            $table->unsignedBigInteger('buildings_id');
-            $table->unsignedBigInteger('seats_id');
+            $table->foreignId('type_id')->references('id')->on('types');
+            $table->foreignId('building_id')->references('id')->on('buildings');
+            $table->foreignId('seat_id')->references('id')->on('seats');
 
             $table->timestamps();
 
-            $table->foreign('types_id')->references('id')->on('types');
-            $table->foreign('buildings_id')->references('id')->on('buildings');
-            $table->foreign('seats_id')->references('id')->on('seats');
         });
     }
 
