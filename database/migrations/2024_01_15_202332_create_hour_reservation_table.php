@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('emails', function (Blueprint $table) {
+        Schema::create('hour_reservation', function (Blueprint $table) {
             $table->id();
 
-            $table->boolean('reservation')->default(false);
-            $table->boolean('reservation_status')->default(false);
-            $table->boolean('attendance')->default(false);
-            $table->boolean('attendance_confirmation')->default(false);
+            $table->foreignId('hour_id')->references('id')->on('hours')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignId('reservation_id')->references('id')->on('reservations')->onDelete('cascade');
         });
     }
 
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('emails');
+        Schema::dropIfExists('hour_reservation');
     }
 };

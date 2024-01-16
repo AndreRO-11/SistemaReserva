@@ -14,4 +14,10 @@ class Email extends Model
         'attendance',
         'attendance_confirmation'
     ];
+
+    //1:1
+    public function reservation()
+    {
+        return $this->belongsTo(Reservation::class);
+    }
 }

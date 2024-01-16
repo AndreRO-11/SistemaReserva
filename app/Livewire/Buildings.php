@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Building;
-use Livewire\Attributes\Rule;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class Buildings extends Component
@@ -11,7 +11,7 @@ class Buildings extends Component
     public $editBuilding = null;
     public $buildings;
 
-    #[Rule([
+    #[Validate([
         'buildingEdit.campus' => 'required',
         'buildingEdit.address' => 'required',
         'buildingEdit.building' => 'required',
@@ -32,8 +32,7 @@ class Buildings extends Component
             'campus' => $this->buildingEdit['campus'],
             'address' => $this->buildingEdit['address'],
             'building' => $this->buildingEdit['building'],
-            'city' => $this->buildingEdit['city'],
-            'active' => true
+            'city' => $this->buildingEdit['city']
         ]);
         $this->reset();
     }

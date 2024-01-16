@@ -32,7 +32,10 @@
                         </button>
                         <div class="container">
                             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                                <ul class="navbar-nav mb-2 mb-lg-0 mx-auto nav-underline">
+                                <ul class="navbar-nav mb-2 mb-lg-0 mx-auto">
+                                    <li class="nav-item">
+                                        <a wire:navigate class="nav-link" href="/reservations">RESERVAS</a>
+                                    </li>
                                     <li class="nav-item">
                                         <a wire:navigate class="nav-link" href="/places">ESPACIOS</a>
                                     </li>

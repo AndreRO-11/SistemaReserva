@@ -32,6 +32,12 @@ class Place extends Model
         return $this->belongsTo(Type::class);
     }
 
+    //1:N
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
     // N:M
     public function details()
     {

@@ -5,18 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Service extends Model
+class Client extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'service',
-        'description',
-        'active'
+        'name',
+        'email',
+        'user_type'
     ];
 
-    //N:M
+    // 1:N
     public function reservations()
     {
-        return $this->belongsToMany(Reservation::class);
+        return $this->hasMany(Reservation::class);
     }
 }

@@ -9,4 +9,10 @@ class Hour extends Model
 {
     use HasFactory;
     protected $fillable = ['hour'];
+
+    //N:M
+    public function reservations()
+    {
+        return $this->belongsToMany(Reservation::class);
+    }
 }

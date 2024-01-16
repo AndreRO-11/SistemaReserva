@@ -5,10 +5,10 @@
         <form wire:submit="store">
             <div class="row row-cols-sm-1 row-cols-md-3 justify-content-center">
                 <div class="col-md-5">
-                    <input wire:model="service" type="text" class="form-control" placeholder="Servicio" required>
+                    <input wire:model="serviceEdit.service" type="text" class="form-control" placeholder="Servicio" required>
                 </div>
                 <div class="col-md-5">
-                    <textarea wire:model="description" class="form-control" placeholder="Descripción"></textarea>
+                    <textarea wire:model="serviceEdit.description" class="form-control" placeholder="Descripción"></textarea>
                 </div>
                 <div class="col-md-1 opciones_boton align-items-start">
                     <button class="btn btn-primary">Añadir</button>

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('address');
             $table->string('building');
             $table->string('city');
-            $table->boolean('active');
+            $table->boolean('active')->default(true);
 
             $table->timestamps();
         });

@@ -32,10 +32,6 @@
     font-size: medium;
     font-weight: bold;
 }
-
-.navbar a:hover{
-    color: white;
-}
 .navbar span {
     color: white;
     font-size: larger;
@@ -50,11 +46,7 @@
     display: flex;
     justify-content: center;
 }
-
-
-.opciones_boton form,
-button,
-input {
+.opciones_boton button {
     margin: 0 2px;
 }
 

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('code');
             $table->integer('capacity');
             $table->integer('floor');
-            $table->boolean('active');
+            $table->boolean('active')->default(true);
 
             $table->foreignId('type_id')->references('id')->on('types');
             $table->foreignId('building_id')->references('id')->on('buildings');

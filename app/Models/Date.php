@@ -5,15 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Seat extends Model
+class Date extends Model
 {
     use HasFactory;
+    protected $fillable = ['date'];
 
-    protected $fillable = ['seat'];
-
-    // 1:N
-    public function places()
+    //N:M
+    public function reservations()
     {
-        return $this->hasMany(Place::class);
+        return $this->belongsToMany(Date::class);
     }
 }

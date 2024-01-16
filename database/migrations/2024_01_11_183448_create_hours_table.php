@@ -15,8 +15,6 @@ return new class extends Migration
             $table->id();
 
             $table->time('hour');
-
-            $table->timestamps();
         });
     }
 

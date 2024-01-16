@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Service;
-use Livewire\Attributes\Rule;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class Services extends Component
@@ -12,7 +12,7 @@ class Services extends Component
     public $services;
     public $confirmation = false;
 
-    #[Rule([
+    #[Validate([
         'serviceEdit.service' => 'required'
     ])]
     public $serviceEdit = [
