@@ -18,6 +18,8 @@ return new class extends Migration
             $table->boolean('reservation_status')->default(false);
             $table->boolean('attendance')->default(false);
             $table->boolean('attendance_confirmation')->default(false);
+
+            $table->timestamps();
         });
     }
 

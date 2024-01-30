@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Date extends Model
 {
@@ -11,7 +12,7 @@ class Date extends Model
     protected $fillable = ['date'];
 
     //N:M
-    public function reservations()
+    public function reservations(): BelongsToMany
     {
         return $this->belongsToMany(Date::class);
     }

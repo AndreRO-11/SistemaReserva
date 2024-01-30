@@ -4,7 +4,7 @@
 
         <div class="opciones_boton mb-3">
             <div class="col-2">
-                <input wire:model="selectedDate" class="form-control" type="date" value="">
+                <input wire:model="selectedDates" multiple class="form-control" type="date">
             </div>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#placeModal">
                 Agregar Espacio
@@ -145,7 +145,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h1 class="modal-title fs-5" id="reservationModalTitle">
-                            {{ $selectedDate }}, Espacio {{ $reservationPlace->code ?? '' }}
+                            {{ $selectedDates }}, Espacio {{ $reservationPlace->code ?? '' }}
                         </h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -157,7 +157,7 @@
                             </div>
                         @endif
 
-                        <form wire:submit="store">
+                        <form wire:submit="bookSave">
                             <div class="row row-cols-1 row-cols-md-2 g-4 m-2">
                                 <div class="col">
                                     <div class="mt-2">
@@ -166,23 +166,23 @@
                                     </div>
                                     <div class="mt-2">
                                         <label class="form-label" for="reservationEdit.name">Nombre</label>
-                                        <input wire:model="reservationEdit.name" id="reservationEdit.name" class="form-control" type="text">
+                                        <input wire:model="reservationEdit.name" id="reservationEdit.name" class="form-control" type="text" required>
                                     </div>
                                     <div class="mt-2">
                                         <label class="form-label" for="reservationEdit.email">Correo</label>
-                                        <input wire:model="reservationEdit.email" id="reservationEdit.email" class="form-control" type="text">
+                                        <input wire:model="reservationEdit.email" id="reservationEdit.email" class="form-control" type="text" required>
                                     </div>
                                     <div class="mt-2">
                                         <label class="form-label" for="reservationEdit.userType">Cargo</label>
-                                        <input wire:model="reservationEdit.userType" id="reservationEdit.userType" class="form-control" type="text">
+                                        <input wire:model="reservationEdit.userType" id="reservationEdit.userType" class="form-control" type="text" required>
                                     </div>
                                     <div class="mt-2">
                                         <label class="form-label" for="reservationEdit.activity">Actividad</label>
-                                        <input wire:model="reservationEdit.activity" id="reservationEdit.activity" class="form-control" type="text">
+                                        <input wire:model="reservationEdit.activity" id="reservationEdit.activity" class="form-control" type="text" required>
                                     </div>
                                     <div class="mt-2">
                                         <label class="form-label" for="reservationEdit.assistants">Cantidad asistentes</label>
-                                        <input wire:model="reservationEdit.assistants" id="reservationEdit.assistants" class="form-control" type="number">
+                                        <input wire:model="reservationEdit.assistants" id="reservationEdit.assistants" class="form-control" type="number" required>
                                     </div>
                                     <div class="mt-2">
                                         <label class="form-check-label" for="reservationEdit.associated_project">Proyecto asociado (Si hay)</label>
@@ -203,8 +203,8 @@
                                             <ul style="list-style-type: none;">
                                                 @foreach ($services as $service)
                                                 <li>
-                                                    <label class="form-check-label" for="selectedServices">
-                                                        <input wire:model="selectedServices" id="selectedServices" class="form-check-input" type="checkbox" value="{{ $service->id }}">
+                                                    <label class="form-check-label" for="selectedServices{{ $service->id }}">
+                                                        <input wire:model="selectedServices" id="selectedServices{{ $service->id }}" class="form-check-input" type="checkbox" value="{{ $service->id }}">
                                                         {{ $service->service }}
                                                     </label>
                                                 </li>
@@ -215,15 +215,17 @@
                                     </div>
                                     <div class="col">
                                         <p>Horas disponibles:</p>
-                                            {{-- @foreach($availableHours as $hour)
-                                            <input wire:model="selectedHours" class="btn-check" type="checkbox" id="selectedHours" value="{{ $hour['hour'] }}">
-                                            <label class="btn btn-outline-secondary" for="selectedHours">{{ $hour['formatted_hour'] }}</label>
-                                            @endforeach --}}
+                                            <div class="form-check">
+                                                @foreach($availableHours as $hour)
+                                                <input wire:model="selectedHours" class="btn-check" type="checkbox" id="selectedHours{{ $hour['hour']['id'] }}" value="{{ $hour['hour']['id'] }}">
+                                                <label class="btn btn-outline-secondary btn-sm m-1" for="selectedHours{{ $hour['hour']['id'] }}">{{ $hour['formatted_hour']}}</label>
+                                                @endforeach
+                                            </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="opciones_boton mt-3">
-                                <button wire:click="bookSave" class="btn btn-primary">Reservar</button>
+                                <button class="btn btn-primary" type="submit">Reservar</button>
                             </div>
                         </form>
 
@@ -235,14 +237,3 @@
     </div>
 
 </div>
-
-@script
-<script>
-    document.addEventListener('livewire:init', () => {
-        Livewire.on('close-modal', (event) => {
-            $('#placeModal').modal('hide');
-        });
-        $wire.dispatch('reset-modal');
-    });
-</script>
-@endscript

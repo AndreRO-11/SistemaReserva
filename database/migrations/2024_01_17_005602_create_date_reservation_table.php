@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('date_reservation', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('date_id')->references('id')->on('dates')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreignId('reservation_id')->references('id')->on('reservations')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignId('date_id')->references('id')->on('dates')->onDelete('cascade')->onUpdate('cascade')->nullable();
+            $table->foreignId('reservation_id')->references('id')->on('reservations')->onDelete('cascade')->onUpdate('cascade')->nullable();
+
+            $table->timestamps();
         });
     }
 

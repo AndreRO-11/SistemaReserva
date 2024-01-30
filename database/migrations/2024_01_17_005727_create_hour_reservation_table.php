@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('hour_reservation', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('hour_id')->references('id')->on('hours')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreignId('reservation_id')->references('id')->on('reservations')->onDelete('cascade');
+            $table->foreignId('hour_id')->references('id')->on('hours')->onDelete('cascade')->onUpdate('cascade')->nullable();
+            $table->foreignId('reservation_id')->references('id')->on('reservations')->onDelete('cascade')->nullable();
+
+            $table->timestamps();
         });
     }
 

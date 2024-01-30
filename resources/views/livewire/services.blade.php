@@ -22,7 +22,7 @@
         </div>
         @else
         <div class="table-responsive mt-3">
-            <table class="table table-hover align-top">
+            <table class="table table-sm table-hover align-top">
                 <thead>
                     <tr>
                         <th scope="col">Servicio</th>

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Detail extends Model
 {
@@ -13,7 +14,7 @@ class Detail extends Model
     ];
 
     // N:M
-    public function place()
+    public function place(): BelongsToMany
     {
         return $this->belongsToMany(Place::class);
     }

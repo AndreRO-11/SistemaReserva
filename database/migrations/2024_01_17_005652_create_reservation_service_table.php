@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('reservation_service', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('reservation_id')->references('id')->on('reservations')->onDelete('cascade');
-            $table->foreignId('service_id')->references('id')->on('services')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignId('reservation_id')->references('id')->on('reservations')->onDelete('cascade')->nullable();
+            $table->foreignId('service_id')->references('id')->on('services')->onDelete('cascade')->onUpdate('cascade')->nullable();
+
+            $table->timestamps();
         });
     }
 

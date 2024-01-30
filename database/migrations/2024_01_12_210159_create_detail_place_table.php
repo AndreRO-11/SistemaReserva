@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('detail_place', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('detail_id')->references('id')->on('details')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreignId('place_id')->references('id')->on('places')->onDelete('cascade');
+            $table->foreignId('detail_id')->references('id')->on('details')->onDelete('cascade')->onUpdate('cascade')->nullable();
+            $table->foreignId('place_id')->references('id')->on('places')->onDelete('cascade')->nullable();
 
             $table->timestamps();
         });

@@ -5,6 +5,9 @@ namespace App\Models;
 use App\Enums\ReservationStatusEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Reservation extends Model
 {
@@ -16,6 +19,7 @@ class Reservation extends Model
         'associated_project',
         'assistants',
         'status',
+        'active',
         'client_id',
         'email_id',
         'place_id'
@@ -26,31 +30,31 @@ class Reservation extends Model
     ];
 
     //1:1
-    public function email()
+    public function email(): HasOne
     {
-        return $this->belongsTo(Email::class);
+        return $this->hasOne(Email::class);
     }
 
-    public function place()
+    public function place(): BelongsTo
     {
         return $this->belongsTo(Place::class);
     }
 
-    public function client()
+    public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
     }
 
     //N:M
-    public function services()
+    public function services(): BelongsToMany
     {
         return $this->belongsToMany(Service::class);
     }
-    public function dates()
+    public function dates(): BelongsToMany
     {
-        return $this->belongsToMany(Date::class);
+        return $this->belongsToMany(Date:: class)->withTimestamps();
     }
-    public function hours()
+    public function hours(): BelongsToMany
     {
         return $this->belongsToMany(Hour::class);
     }

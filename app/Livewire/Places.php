@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Building;
 use App\Models\Client;
+use App\Models\Date;
 use App\Models\Detail;
 use App\Models\Email;
 use App\Models\Hour;
@@ -13,26 +14,31 @@ use App\Models\Seat;
 use App\Models\Service;
 use App\Models\Type;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class Places extends Component
 {
-    public $editPlace = null, $dateFilter, $selectedDate, $reservationPlace, $localDate, $unreservedPlaces = [];
+    public $editPlace = null, $dateFilter, $selectedDate, $reservationPlace, $localDate, $unreservedPlaces = [], $availableHours = [];
     public $places, $details, $buildings, $types, $seats, $services;
-    public $selectedDetails = [], $selectedServices = [], $selectedHours = [];
+    public $selectedDetails = [], $selectedServices = [], $selectedHours = [], $selectedDates = [];
 
-    #[Validate([
-        'placeEdit.code' => 'required',
-        'placeEdit.capacity' => 'required',
-        'placeEdit.floor' => 'required',
-        'placeEdit.type_id' => 'required',
-        'placeEdit.seat_id' => 'required',
-        'placeEdit.building_id' => 'required'
-    ])]
+    // #[Validate([
+    //     'placeEdit.code' => 'required',
+    //     'placeEdit.capacity' => 'required',
+    //     'placeEdit.floor' => 'required',
+    //     'placeEdit.type_id' => 'required',
+    //     'placeEdit.seat_id' => 'required',
+    //     'placeEdit.building_id' => 'required',
+    //     'reservationEdit.name' => 'required',
+    //     'reservationEdit.email' => 'required|email',
+    //     'reservationEdit.userType' => 'required',
+    //     'reservationEdit.activity' => 'required',
+    //     'reservationEdit.assistants' => 'required|numeric|min:1',
+    //     'selectedDates' => 'required|array|min:1',
+    //     'selectedHours' => 'required|array|min:1',
+    // ])]
     public $placeEdit = [
         'code' => '',
         'capacity' => '',
@@ -54,7 +60,14 @@ class Places extends Component
 
     public function store()
     {
-        $this->validate();
+        $this->validate([
+            'placeEdit.code' => 'required',
+            'placeEdit.capacity' => 'required',
+            'placeEdit.floor' => 'required',
+            'placeEdit.type_id' => 'required',
+            'placeEdit.seat_id' => 'required',
+            'placeEdit.building_id' => 'required',
+        ]);
         $code = Str::upper($this->placeEdit['code']);
         $place = Place::create([
             'code' => $code,
@@ -84,7 +97,14 @@ class Places extends Component
 
     public function update()
     {
-        $this->validate();
+        $this->validate([
+            'placeEdit.code' => 'required',
+            'placeEdit.capacity' => 'required',
+            'placeEdit.floor' => 'required',
+            'placeEdit.type_id' => 'required',
+            'placeEdit.seat_id' => 'required',
+            'placeEdit.building_id' => 'required',
+        ]);
         $place = Place::find($this->editPlace);
         $code = Str::upper($this->placeEdit['code']);
         $place->update([
@@ -112,102 +132,93 @@ class Places extends Component
     public function book($id)
     {
         $this->editPlace = $id;
-        $place = Place::with('building', 'details')->find($id)->first();
+        $place = Place::with('building', 'details')->find($id);
         $this->reservationPlace = $place;
+        $this->availableHours = $this->getAvailableHours();
     }
 
     public function bookSave()
     {
-        $validated = Validator::make([
-            'name' => $this->reservationEdit['name'],
-            'email' => $this->reservationEdit['email'],
-            'userType' => $this->reservationEdit['userType'],
-            'activity' => $this->reservationEdit['activity'],
-            'assistants' => $this->reservationEdit['assistants'],
-            'dateSelected' => $this->dateSelected,
-            'selectedHours' => $this->selectedHours
-        ],
-        [
+        $this->validate([
             'reservationEdit.name' => 'required',
             'reservationEdit.email' => 'required',
             'reservationEdit.userType' => 'required',
             'reservationEdit.activity' => 'required',
-            'reservationEdit.assistants' => 'required',
-            'dateSelected' => 'required',
-            'selectedHours' => 'required'
-        ])->validate();
+            'reservationEdit.assistants' => 'required|numeric|min:1',
+            'selectedDates' => 'required',
+            'selectedHours' => 'required',
+        ]);
 
         $emailId = Email::create();
 
-        $clientId = Client::find($this->reservationEdit['email']);
-        if(!$clientId)
+        $clientExists = Client::where('email', $this->reservationEdit['email'])->exists();
+        if($clientExists)
         {
+            $clientId = Client::where('email', $this->reservationEdit['email'])->first();
+        } else {
             $clientId = Client::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'user_type' => $validated['userType']
+                'name' => $this->reservationEdit['name'],
+                'email' => $this->reservationEdit['email'],
+                'user_type' => $this->reservationEdit['userType']
             ]);
         }
 
         $reservation = Reservation::create([
-            'comment' => $validated['comment'],
-            'activity' => $validated['activity'],
-            'associated_project' => $validated['associated_project'],
-            'assistants' => $validated['assistants'],
-            'client_id' => $clientId,
-            'email_id' => $emailId,
-            'place_id' => $this->reservationPlace->place->id,
+            'comment' => $this->reservationEdit['comment'],
+            'activity' => $this->reservationEdit['activity'],
+            'associated_project' => $this->reservationEdit['associated_project'],
+            'assistants' => $this->reservationEdit['assistants'],
+            'client_id' => $clientId->id,
+            'email_id' => $emailId->id,
+            'place_id' => $this->reservationPlace->id,
         ]);
-        // Se cambia el public $dateFilter a arreglo []
-        // $dates = $this->dateFilter;
-        // foreach ($dateFilter as $date) {
-        //     $dates->date = Carbon::parse($date->date)->format('d/m/Y');
-        // }
-        $date = Carbon::parse($this->selectedDate)->format('Y-m-d');
 
         $reservation->services()->attach($this->selectedServices);
-        $reservation->dates()->attach($date);
-        $reservation->hours()->attach($this->selectedHours);
-        $this->reset();
-        $this->dispatch('close-modal');
-    }
 
-    #[On('reset-modal')]
-    public function close()
-    {
+        if (!is_array($this->selectedDates)) {
+            $this->selectedDates = [$this->selectedDates];
+        }
+        foreach ($this->selectedDates as $selectedDate) {
+            $date = Date::firstOrCreate(['date' => $selectedDate]);
+            $reservation->dates()->attach($date->id);
+        }
+        $reservation->hours()->attach($this->selectedHours);
+        // $reservation->dates()->attach($this->selectedDates);
+        $this->selectedDates = [];
+        $this->selectedHours = [];
         $this->reset();
     }
 
     public function getAvailableHours()
     {
-        if (!$this->selectedDate || !$this->editPlace) {
+        if (!$this->selectedDates || !$this->editPlace) {
             return [];
         }
-
         $selectedPlace = Place::with(['reservations.dates', 'reservations.hours'])
         ->where('id', $this->editPlace)
         ->first();
-
         $reservedHours = $selectedPlace->reservations
-        ->where('dates.date', $this->selectedDate)
-        ->pluck('hours');
+        ->flatMap(function ($reservation) {
+            return $reservation->hours->pluck('id')->toArray();
+        })
+        ->toArray();
 
-        $allHours = Hour::all();
+        $allHours = Hour::all()->pluck('id')->toArray();
+        $availableHours = array_diff($allHours, $reservedHours);
 
-        $availableHours = $allHours->diff($reservedHours)->values();
-
-        foreach ($availableHours as $hour) {
-            $hourFormat = Carbon::parse($hour)->format('H:i');
-            $formattedHours[] = ['id' => $hour->id, 'formatted_hour' => $hourFormat];
-        }
-        dd($hourFormat);
-
+        $formattedHours = collect($availableHours)->map(function ($hourId) {
+            $hour = Hour::find($hourId);
+            return [
+                'hour' => $hour,
+                'formatted_hour' => Carbon::parse($hour->hour)->format('H:i'),
+            ];
+        });
         return $formattedHours;
     }
 
     public function render()
     {
-        $this->selectedDate = Carbon::now()->format('Y-m-d');
+        $this->selectedDates = Carbon::now()->format('Y-m-d');
         $this->buildings = Building::where('active', true)->get();
         $this->types = Type::all();
         $this->seats = Seat::all();
@@ -217,12 +228,12 @@ class Places extends Component
         $this->unreservedPlaces = Place::with(['details', 'building', 'reservations.dates', 'reservations.hours'])
         ->whereDoesntHave('reservations', function ($query) {
             $query->whereHas('dates', function ($subquery) {
-                $subquery->where('date', $this->selectedDate);
+                $subquery->where('date', $this->selectedDates);
             });
         })
         ->get();
 
-        // $availableHours = $this->getAvailableHours();
+
 
         return view('livewire.places', [
             'places' => $this->unreservedPlaces,
@@ -231,8 +242,7 @@ class Places extends Component
             'types' => $this->types,
             'seats' => $this->seats,
             'services' => $this->services,
-            'reservationPlace' => $this->reservationPlace,
-            // 'availableHours' => $availableHours,
+            'reservationPlace' => $this->reservationPlace
         ]);
     }
 }
