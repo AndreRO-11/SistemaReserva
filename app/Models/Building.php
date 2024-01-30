@@ -20,6 +20,6 @@ class Building extends Model
     // 1:N
     public function places()
     {
-        return $this->belongsToMany(Place::class);
+        return $this->hasMany(Place::class);
     }
 }

@@ -16,7 +16,7 @@ return new class extends Migration
 
             $table->string('service');
             $table->string('description');
-            $table->boolean('active');
+            $table->boolean('active')->default(true);
 
             $table->timestamps();
         });

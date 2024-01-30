@@ -6,15 +6,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Seat extends Model
+class Client extends Model
 {
     use HasFactory;
-
-    protected $fillable = ['seat'];
+    protected $fillable = [
+        'name',
+        'email',
+        'user_type'
+    ];
 
     // 1:N
-    public function places(): HasMany
+    public function reservations(): HasMany
     {
-        return $this->hasMany(Place::class);
+        return $this->hasMany(Reservation::class);
     }
 }

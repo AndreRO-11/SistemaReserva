@@ -29,7 +29,7 @@
         </div>
         @else
         <div class="table-responsive mt-3">
-            <table class="table table-hover align-middle">
+            <table class="table table-sm table-hover align-middle">
                 <thead>
                     <tr>
                         <th scope="col">Edificio</th>

@@ -4,15 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Type extends Model
 {
     use HasFactory;
     protected $fillable = ['type'];
 
-    // 1:1
-    public function place()
+    // 1:N
+    public function places(): HasMany
     {
-        return $this->belongsTo(Place::class);
+        return $this->hasMany(Place::class);
     }
 }

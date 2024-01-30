@@ -2,6 +2,7 @@
 
 use App\Livewire\Buildings;
 use App\Livewire\Places;
+use App\Livewire\Reservations;
 use App\Livewire\Seats;
 use App\Livewire\Services;
 use App\Livewire\Types;
@@ -26,11 +27,12 @@ Route::get('/', function () {
 //     return view('dashboard');
 // })->name('dashboard');
 
-Route::get('buildings', Buildings::class);
+Route::get('/buildings', Buildings::class);
 Route::get('/seats', Seats::class);
 Route::get('/types', Types::class);
 Route::get('/services', Services::class);
 Route::get('/places', Places::class);
+Route::get('/reservations', Reservations::class);
 
 
 
