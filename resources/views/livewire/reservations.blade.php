@@ -124,20 +124,17 @@
                                         </p>
                                     </div>
                                     <div class="mt-2">
-                                        <p>Observaciones: {{ $reservationEdit['comment'] }}</p>
+                                        <p>Observaciones: {!! $reservationEdit['comment'] !!}</p>
                                     </div>
                                     <div class="mt-2">
                                         <p>Servicios:</p>
-                                        @if (empty($selectedServices))
-                                            <p>No se seleccionaron servicios.</p>
+                                        @if (empty($showServices))
+                                            <p>No existen servicios.</p>
                                         @else
                                             <ul>
-                                                @foreach ($selectedServices as $service)
+                                                @foreach ($showServices as $service)
                                                     <li>
-                                                        <p>{{ $service->service }} @if (!empty($service->description))
-                                                                : {{ $service->description }}
-                                                            @endif
-                                                        </p>
+                                                        <p>{{ $service->service }}</p>
                                                     </li>
                                                 @endforeach
                                             </ul>
@@ -231,34 +228,25 @@
                                         <textarea wire:model="reservationEdit.comment" id="reservationEdit.comment" class="form-control" rows="5">{!! $reservationEdit['comment'] !!}</textarea>
                                     </div>
                                     <div class="mt-2 cols-sm-2 d-grid">
-                                        @if (empty($allServices))
-                                            <h6>No hay servicios disponibles</h6>
-                                        @else
-                                            <p>Servicios disponibles:</p>
-                                            <ul style="list-style-type: none;">
-                                                {{-- @foreach ($allServices as $service)
-                                                    <li>
-                                                        <label class="form-check-label" for="selectedServices">
-                                                            <input wire:model="selectedServices" id="selectedServices"
-                                                                class="form-check-input" type="checkbox"
-                                                                value="{{ $service->id }}">
-                                                            {{ $service->service }}
-                                                        </label>
-                                                    </li>
-                                                @endforeach --}}
-                                                {{-- @foreach ($allServices as $index => $service)
-                                                    <li>
-                                                        <label class="form-check-label"
-                                                            for="selectedServices.{{ $index }}">
-                                                            <input wire:model="selectedServices.{{ $index }}"
-                                                                id="selectedServices.{{ $index }}"
-                                                                class="form-check-input" type="checkbox">
-                                                            {{ $service->service }}
-                                                        </label>
-                                                    </li>
-                                                @endforeach --}}
-                                            </ul>
-                                        @endif
+                                        <p>Servicios disponibles:</p>
+                                        <ul style="list-style-type: none;">
+                                            @foreach ($allServices as $service)
+                                                <li>
+                                                    <label class="form-check-label" for="selectedServices{{ $service->id }}">
+                                                        <input wire:model="reservationEdit.selectedServices" id="selectedServices{{ $service->id }}" class="form-check-input" type="checkbox" value="{{ $service->id }}">
+                                                        {{ $service->service }}
+                                                    </label>
+                                                </li>
+                                            @endforeach
+                                            {{-- @foreach ($allServices as $service)
+                                                <li>
+                                                    <label class="form-check-label" for="selectedServices{{ $service->id }}">
+                                                        <input wire:model="reservationEdit.selectedServices" id="selectedServices{{ $service->id }}" class="form-check-input" type="checkbox" value="{{ $service->id }}">
+                                                        {{ $service->service }}
+                                                    </label>
+                                                </li>
+                                            @endforeach --}}
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
