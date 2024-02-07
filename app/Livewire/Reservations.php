@@ -9,7 +9,7 @@ use Livewire\Component;
 
 class Reservations extends Component
 {
-    public $reservations, $statusFilter = null, $selectedServices = [], $selectedHours = [], $allServices = [], $selectedServiceIds = [];
+    public $reservations, $statusFilter = null, $selectedServices = [], $selectedHours = [], $allServices = [], $showServices = [];
     public $placeEdit, $clientEdit, $hours = [], $reservationId;
 
 
@@ -17,7 +17,8 @@ class Reservations extends Component
         'activity' => '',
         'assistants' => '',
         'associated_project' => '',
-        'comment' => ''
+        'comment' => '',
+        'selectedServices' => []
     ];
 
     public function show($id)
@@ -32,7 +33,7 @@ class Reservations extends Component
         $this->placeEdit = $reservation->place;
         $this->clientEdit = $reservation->client;
         $this->hours = $reservation->hours;
-        $this->selectedServices = $reservation->services;
+        $this->showServices = $reservation->services;
     }
 
     public function edit($id)
@@ -46,16 +47,18 @@ class Reservations extends Component
         $this->placeEdit = $reservation->place;
         $this->clientEdit = $reservation->client;
         $this->hours = $reservation->hours;
-        $this->selectedServices = $reservation->services;
+        // $this->selectedServices = $reservation->services;
+        $this->reservationEdit['selectedServices'] = $reservation->services->pluck('id')->toArray();
 
         $allServices = Service::all();
         $this->allServices = $allServices;
-
 
     }
 
     public function update()
     {
+        
+
         $this->reset();
     }
 
