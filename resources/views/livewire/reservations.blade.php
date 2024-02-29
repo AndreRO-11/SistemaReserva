@@ -31,8 +31,9 @@
                                 <td>{{ $reservation->dates->first()->date ?? '' }}</td>
                                 <td class="text-center">
                                     @if ($reservation->hours->isNotEmpty())
-                                        {{ \Carbon\Carbon::parse($reservation->hours->first()->hour)->format('H:i') }} -
-                                        {{ \Carbon\Carbon::parse($reservation->hours->last()->hour)->addMinutes(40)->format('H:i') }}
+                                        {{ \Carbon\Carbon::parse($reservation->hours->min('hour'))->format('H:i') }}
+                                         -
+                                        {{ \Carbon\Carbon::parse($reservation->hours->max('hour'))->addMinutes(40)->format('H:i') }}
                                     @endif
                                 </td>
                                 <td>{{ $reservation->place->code }} - {{ $reservation->place->building->building }},
@@ -44,11 +45,11 @@
                                     @switch($reservation->status->value)
                                         @case('APROBADO')
                                             <h5><span class="badge bg-success">{{ $reservation->status }}</span></h5>
-                                        @break
+                                            @break
 
                                         @case('RECHAZADO')
                                             <h5><span class="badge bg-danger">{{ $reservation->status }}</span></h5>
-                                        @break
+                                            @break
 
                                         @default
                                             <h5><span class="badge bg-secondary">{{ $reservation->status }}</span></h5>
@@ -117,14 +118,14 @@
                                         <p>
                                             Horario seleccionado:
                                             @if ($hours && $hours->isNotEmpty())
-                                                {{ \Carbon\Carbon::parse($hours->first()->hour)->format('H:i') }}
+                                                {{ \Carbon\Carbon::parse($hours->min('hour'))->format('H:i') }}
                                                 -
-                                                {{ \Carbon\Carbon::parse($hours->last()->hour)->addMinutes(40)->format('H:i') }}
+                                                {{ \Carbon\Carbon::parse($hours->max('hour'))->addMinutes(40)->format('H:i') }}
                                             @endif
                                         </p>
                                     </div>
                                     <div class="mt-2">
-                                        <p>Observaciones: {!! $reservationEdit['comment'] !!}</p>
+                                        <p>Observaciones: {!!nl2br ($reservationEdit['comment']) !!}</p>
                                     </div>
                                     <div class="mt-2">
                                         <p>Servicios:</p>
@@ -155,6 +156,7 @@
             </div>
         </div>
 
+        {{-- Modal edit reservation --}}
         <div wire:ignore.self class="modal fade" id="reservationEditModal" tabindex="-1"
             aria-labelledby="reservationEditModal" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -217,15 +219,21 @@
                                         <p>
                                             Horario seleccionado:
                                             @if ($hours && $hours->isNotEmpty())
-                                                {{ \Carbon\Carbon::parse($hours->first()->hour)->format('H:i') }}
+                                                {{ \Carbon\Carbon::parse($hours->min('hour'))->format('H:i') }}
                                                 -
-                                                {{ \Carbon\Carbon::parse($hours->last()->hour)->addMinutes(40)->format('H:i') }}
+                                                {{ \Carbon\Carbon::parse($hours->max('hour'))->addMinutes(40)->format('H:i') }}
                                             @endif
                                         </p>
                                     </div>
-                                    <div class="mt-2">
+                                    {{-- <div class="mt-2">
                                         <label class="form-label" for="reservationEdit.comment">Observaciones:</label>
                                         <textarea wire:model="reservationEdit.comment" id="reservationEdit.comment" class="form-control" rows="5">{!! $reservationEdit['comment'] !!}</textarea>
+                                    </div> --}}
+                                    <div class="mt-2">
+                                        <label class="form-label">Observaciones:</label>
+                                        <textarea wire:model="comment" class="form-control" rows="5">
+                                            {{-- {!! $reservationEdit['comment'] !!} --}}
+                                        </textarea>
                                     </div>
                                     <div class="mt-2 cols-sm-2 d-grid">
                                         <p>Servicios disponibles:</p>
@@ -238,14 +246,6 @@
                                                     </label>
                                                 </li>
                                             @endforeach
-                                            {{-- @foreach ($allServices as $service)
-                                                <li>
-                                                    <label class="form-check-label" for="selectedServices{{ $service->id }}">
-                                                        <input wire:model="reservationEdit.selectedServices" id="selectedServices{{ $service->id }}" class="form-check-input" type="checkbox" value="{{ $service->id }}">
-                                                        {{ $service->service }}
-                                                    </label>
-                                                </li>
-                                            @endforeach --}}
                                         </ul>
                                     </div>
                                 </div>

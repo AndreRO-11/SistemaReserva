@@ -42,6 +42,12 @@ class Types extends Component
         $this->editType = null;
     }
 
+    public function close()
+    {
+        $this->editType = null;
+        $this->reset();
+    }
+
     public function delete($id)
     {
         $type = Type::find($id);

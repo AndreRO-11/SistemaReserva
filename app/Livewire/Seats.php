@@ -42,6 +42,12 @@ class Seats extends Component
         $this->editSeat = null;
     }
 
+    public function close()
+    {
+        $this->editSeat = null;
+        $this->reset();
+    }
+
     public function delete($id)
     {
         $seat = Seat::find($id);

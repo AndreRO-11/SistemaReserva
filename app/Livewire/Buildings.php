@@ -61,6 +61,12 @@ class Buildings extends Component
         $this->editBuilding = null;
     }
 
+    public function close()
+    {
+        $this->editBuilding = null;
+        $this->reset();
+    }
+
     public function delete($id)
     {
         $building = Building::find($id);
