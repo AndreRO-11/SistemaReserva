@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Mail\ReservationEmail;
 use App\Models\Building;
 use App\Models\Client;
 use App\Models\Date;
@@ -14,8 +15,8 @@ use App\Models\Seat;
 use App\Models\Service;
 use App\Models\Type;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class Places extends Component
@@ -24,21 +25,6 @@ class Places extends Component
     public $places, $details, $buildings, $types, $seats, $services;
     public $selectedDetails = [], $selectedServices = [], $selectedHours = [], $selectedDates = [];
 
-    // #[Validate([
-    //     'placeEdit.code' => 'required',
-    //     'placeEdit.capacity' => 'required',
-    //     'placeEdit.floor' => 'required',
-    //     'placeEdit.type_id' => 'required',
-    //     'placeEdit.seat_id' => 'required',
-    //     'placeEdit.building_id' => 'required',
-    //     'reservationEdit.name' => 'required',
-    //     'reservationEdit.email' => 'required|email',
-    //     'reservationEdit.userType' => 'required',
-    //     'reservationEdit.activity' => 'required',
-    //     'reservationEdit.assistants' => 'required|numeric|min:1',
-    //     'selectedDates' => 'required|array|min:1',
-    //     'selectedHours' => 'required|array|min:1',
-    // ])]
     public $placeEdit = [
         'code' => '',
         'capacity' => '',
@@ -141,7 +127,7 @@ class Places extends Component
     {
         $this->validate([
             'reservationEdit.name' => 'required',
-            'reservationEdit.email' => 'required',
+            'reservationEdit.email' => 'required|email|ends_with:@ubiobio.cl,.ubiobio.cl',
             'reservationEdit.userType' => 'required',
             'reservationEdit.activity' => 'required',
             'reservationEdit.assistants' => 'required|numeric|min:1',
@@ -186,6 +172,10 @@ class Places extends Component
         // $reservation->dates()->attach($this->selectedDates);
         $this->selectedDates = [];
         $this->selectedHours = [];
+
+        // Email de reserva realizada
+        // Mail::to($clientId->email)->send(new ReservationEmail($emailId));
+
         $this->reset();
     }
 
@@ -232,8 +222,6 @@ class Places extends Component
             });
         })
         ->get();
-
-
 
         return view('livewire.places', [
             'places' => $this->unreservedPlaces,

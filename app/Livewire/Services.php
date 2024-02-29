@@ -54,6 +54,7 @@ class Services extends Component
     public function close()
     {
         $this->editService = null;
+        $this->reset();
     }
 
     public function delete($id)

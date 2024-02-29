@@ -27,8 +27,9 @@
     height: 70px;
 }
 
-.navbar a {
+.navbar a, i {
     color: white;
+
     font-size: medium;
     font-weight: bold;
 }
@@ -46,11 +47,46 @@
     display: flex;
     justify-content: center;
 }
-.opciones_boton button {
+/* .boton_login {
+    display: flex;
+    justify-content: end;
+    align-items: end;
+} */
+.boton_login i{
+    color: gray;
+    font-size: large;
+}
+.opciones_boton button, a {
     margin: 0 2px;
 }
 
 .agregar_button {
     display: flex;
     justify-content: end;
+}
+
+.login_center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* PDF */
+.report_header {
+    display: block;
+    width: 100%;
+    height: 125px;
+}
+.report_header_container {
+    display: flex;
+    padding: 15px 20px;
+    justify-content: space-between;
+}
+.report_break {
+    background-color: #1B2E51;
+    height: 20px;
+}
+.report_footer {
+    background-color: #1B2E51;
+    height: 20px;
 }

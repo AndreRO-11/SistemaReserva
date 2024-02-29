@@ -2,18 +2,25 @@
 
     <div class="container mt-3">
 
-        <div class="opciones_boton mb-3">
-            <div class="col-2">
-                <input wire:model="selectedDates" multiple class="form-control" type="date">
+        <div class="opciones_boton mb-3 row row-cols-sm-1">
+            <div class="col-2 col-sm-2 my-auto text-end">
+                <label for="selectedDates"><h6>Fecha a buscar:</h6></label>
             </div>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#placeModal">
-                Agregar Espacio
-            </button>
+            <div class="col-2 col-sm-2">
+                <input wire:model="selectedDates" multiple class="form-control" type="date" id="selectedDates">
+            </div>
+            @auth
+            <div class="col-2 col-sm-2">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#placeModal">
+                    Agregar Espacio
+                </button>
+            </div>
+            @endauth
         </div>
 
         @if (!$unreservedPlaces)
         <div class="mx-auto">
-            <h5>No existen espacios disponibles</h5>
+            <h5>No se encuentran espacios disponibles</h5>
         </div>
         @else
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
@@ -38,8 +45,10 @@
                             </div>
                             <div class="opciones_boton">
                                 <button wire:click="book({{ $place->id }})" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#reservationModal">Reservar</button>
+                                @auth
                                 <button wire:click="edit({{ $place->id }})" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#placeModal"><i class="bi bi-pencil-square"></i></button>
                                 <button wire:click="delete({{ $place->id }})" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                                @endauth
                             </div>
                         </div>
                     </div>
@@ -55,9 +64,13 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h1 class="modal-title fs-5" id="placeModalTitle">
-
+                            @if (!$editPlace)
+                                Nuevo Espacio
+                            @endif
                         </h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="opciones_boton">
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
                     </div>
                     <div class="modal-body">
 
@@ -170,7 +183,7 @@
                                     </div>
                                     <div class="mt-2">
                                         <label class="form-label" for="reservationEdit.email">Correo</label>
-                                        <input wire:model="reservationEdit.email" id="reservationEdit.email" class="form-control" type="text" required>
+                                        <input wire:model="reservationEdit.email" id="reservationEdit.email" class="form-control @error('reservationEdit.email') is-invalid @enderror" type="text" required>
                                     </div>
                                     <div class="mt-2">
                                         <label class="form-label" for="reservationEdit.userType">Cargo</label>

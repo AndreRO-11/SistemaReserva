@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->boolean('used')->default(false);
-            $table->string('comment');
+            $table->text('comment');
             $table->string('activity');
             $table->string('associated_project');
             $table->integer('assistants');

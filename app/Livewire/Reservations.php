@@ -5,12 +5,13 @@ namespace App\Livewire;
 use App\Enums\ReservationStatusEnum;
 use App\Models\Reservation;
 use App\Models\Service;
+use Carbon\Carbon;
 use Livewire\Component;
 
 class Reservations extends Component
 {
     public $reservations, $statusFilter = null, $selectedServices = [], $selectedHours = [], $allServices = [], $showServices = [];
-    public $placeEdit, $clientEdit, $hours = [], $reservationId;
+    public $placeEdit, $clientEdit, $hours = [], $reservationId, $comment;
 
 
     public $reservationEdit = [
@@ -39,25 +40,36 @@ class Reservations extends Component
     public function edit($id)
     {
         $reservation = Reservation::with('place', 'client', 'hours', 'services')->find($id);
+        $this->reservationId = $id;
         $this->reservationEdit['activity'] = $reservation->activity;
         $this->reservationEdit['assistants'] = $reservation->assistants;
         $this->reservationEdit['associated_project'] = $reservation->associated_project;
-        $this->reservationEdit['comment'] = $reservation->comment;
+        // $this->reservationEdit['comment'] = $reservation->comment;
+        $this->comment = $reservation->comment;
 
         $this->placeEdit = $reservation->place;
         $this->clientEdit = $reservation->client;
         $this->hours = $reservation->hours;
-        // $this->selectedServices = $reservation->services;
         $this->reservationEdit['selectedServices'] = $reservation->services->pluck('id')->toArray();
 
         $allServices = Service::all();
         $this->allServices = $allServices;
-
     }
 
     public function update()
     {
-        
+        $this->validate([
+            'reservationEdit.activity' => 'required',
+            'reservationEdit.assistants' => 'required',
+        ]);
+        $reservation = Reservation::with('services')->find($this->reservationId);
+        $reservation->update([
+            'comment' => $this->comment,
+            'activity' => $this->reservationEdit['activity'],
+            'associated_project' => $this->reservationEdit['associated_project'],
+            'assistants' => $this->reservationEdit['assistants'],
+        ]);
+        $reservation->services()->sync($this->reservationEdit['selectedServices']);
 
         $this->reset();
     }
@@ -82,7 +94,7 @@ class Reservations extends Component
     {
         $reservation = Reservation::find($id);
         $reservation->update([
-            'status' => ReservationStatusEnum::reject
+            'status' => ReservationStatusEnum::rejected
         ]);
     }
 

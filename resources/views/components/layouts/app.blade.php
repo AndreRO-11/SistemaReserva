@@ -11,7 +11,6 @@
 
         @livewireStyles
 
-        {{-- <title>{{ $title ?? 'Page Title' }}</title> --}}
     </head>
     <body>
 
@@ -26,6 +25,7 @@
                 </div>
                 <nav class="navbar navbar-expand-lg">
                     <div class="container-fluid">
+                        @auth
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                             <span><i class="bi bi-list"></i></span>
@@ -33,6 +33,9 @@
                         <div class="container">
                             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                                 <ul class="navbar-nav mb-2 mb-lg-0 mx-auto">
+                                    <li class="nav-item">
+                                        <a wire:navigate class="nav-link" href="/reports">REPORTES</a>
+                                    </li>
                                     <li class="nav-item">
                                         <a wire:navigate class="nav-link" href="/reservations">RESERVAS</a>
                                     </li>
@@ -51,9 +54,20 @@
                                     <li class="nav-item">
                                         <a wire:navigate class="nav-link" href="/types">TIPO DE ESPACIOS</a>
                                     </li>
+                                    <li class="nav-item">
+                                        <a href="/logout" class="btn"><i class="bi bi-door-closed"></i></a>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
+                        @endauth
+                        @guest
+                        <div class="container">
+                            <div class="boton_login text-end">
+                                <span><a href="/login" class="btn"><i class="bi bi-person-fill"></i></a></span>
+                            </div>
+                        </div>
+                        @endguest
                     </div>
                 </nav>
             </header>

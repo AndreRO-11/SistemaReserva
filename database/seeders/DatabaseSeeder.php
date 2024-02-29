@@ -24,9 +24,11 @@ class DatabaseSeeder extends Seeder
         $this->truncateTables([
             'hours',
             'details',
+            'users'
         ]);
         $this->call(HourSeeder::class);
         $this->call(DetailSeeder::class);
+        $this->call(UserSeeder::class);
     }
 
     public function truncateTables(array $tables)

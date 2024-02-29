@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\ReportsController;
+use App\Livewire\Admin\Reports;
 use App\Livewire\Buildings;
+use App\Livewire\Login;
 use App\Livewire\Places;
 use App\Livewire\Reservations;
 use App\Livewire\Seats;
@@ -20,19 +23,37 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('dashboard');
+    return redirect('/places');
 });
 
-// Route::middleware(['auth:sanchtum', 'verified'])->get('/dashboard', function() {
-//     return view('dashboard');
-// })->name('dashboard');
+Route::get('/login', Login::class);
+Route::get('/places', Places::class)->name('places');
 
-Route::get('/buildings', Buildings::class);
-Route::get('/seats', Seats::class);
-Route::get('/types', Types::class);
-Route::get('/services', Services::class);
-Route::get('/places', Places::class);
-Route::get('/reservations', Reservations::class);
+// Admin
+Route::group(['middleware' => 'auth'], function() {
+
+    Route::get('/buildings', Buildings::class);
+    Route::get('/seats', Seats::class);
+    Route::get('/types', Types::class);
+    Route::get('/services', Services::class);
+    Route::get('/reservations', Reservations::class);
+
+    Route::get('/logout', [Login::class, 'logout'])->name('logout');
+
+    // Reportes
+    Route::get('/reports', Reports::class);
+    // Route::get('/donwload-place/{id}', [ReportsController::class, 'downloadPlace'])->name('download-place','{id}');
+    Route::get('/download-place/{id}', [ReportsController::class, 'downloadPlace'])->name('download-place');
+    // Route::get('/download-place/{id}/{dateFrom}/{dateTo}', [ReportsController::class, 'downloadPlace'])->name('download-place');
+    Route::get('/download-dates/{id}/{dateFrom}/{dateTo}', [ReportsController::class, 'downloadDates'])->name('download-dates');
+
+
+    // Email
+    Route::get('/confirmation/{id}', 'ConfirmationEmailController@confirmationEmail');
+    Route::get('/reservation/{id', 'ReservationEmailController@reservationEmail');
+});
+
+
 
 
 

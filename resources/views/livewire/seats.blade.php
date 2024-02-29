@@ -41,9 +41,10 @@
                             <div class="opciones_boton">
                                 @if ($editSeat !== $seat->id)
                                 <button wire:click="edit({{ $seat->id }})" class="btn btn-primary"><i class="bi bi-pencil-square"></i></button>
-                                <button wire:click="delete({{ $seat->id }})" wire:confirm="¿Esta seguro de eliminar este tipo de asiento?" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                                <button wire:confirmation="¿Esta seguro de eliminar este tipo de asiento?" wire:click="delete({{ $seat->id }})" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
                                 @else
                                 <button wire:click="update" class="btn btn-success"><i class="bi bi-check-lg"></i></button>
+                                <button wire:click="close" class="btn btn-secondary"><i class="bi bi-x-lg"></i></button>
                                 @endif
                             </div>
                         </td>
