@@ -38,22 +38,11 @@ class ReportsController extends Controller
         // ]);
     }
 
-    // public function downloadPlace($id, $dateFrom, $dateTo)
-    public function downloadPlace($id)
+    public function downloadPlace($id, $dateFrom, $dateTo)
+    // public function downloadPlace($id)
     {
         $pathLogo = public_path('images/logo_VRIP.png');
         $pathEscudo = public_path('images/escudo-color-gradiente.png');
-
-        $dateReservation = Place::where('id', $id)
-        ->with('reservations.dates')
-        ->get();
-
-        if (empty($dateFrom)) {
-            $dateFrom = $dateReservation->min('date');
-        }
-        if (empty($dateTo)) {
-            $dateFrom = Carbon::today();
-        }
 
         $data = Place::where('id', $id)
         ->with('details', 'type', 'seat', 'building', 'reservations.dates', 'reservations.hours', 'reservations.services')
@@ -61,6 +50,19 @@ class ReportsController extends Controller
         //     $query->whereBetween('date', [$dateFrom, $dateTo]);
         // })
         ->get();
+
+        $dateReservation = $data->flatMap(function ($place) {
+            return $place->reservations->flatMap(function ($reservation) {
+                return $reservation->dates->pluck('date');
+            });
+        });
+
+        if (empty($dateFrom)) {
+            $dateFrom = $dateReservation->min();
+        }
+        if (empty($dateTo)) {
+            $dateTo = Carbon::today();
+        }
 
         $pending = $data->flatMap(function ($place) {
             return $place->reservations->where('status.value', 'PENDIENTE');
@@ -79,7 +81,9 @@ class ReportsController extends Controller
             'approved' => $approved,
             'rejected' => $rejected,
             'pathLogo' => $pathLogo,
-            'pathEscudo' => $pathEscudo
+            'pathEscudo' => $pathEscudo,
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo
         ])
         ->render());
 

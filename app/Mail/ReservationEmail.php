@@ -25,8 +25,11 @@ class ReservationEmail extends Mailable
     {
         $emailId = $id;
 
-        $this->reservation = Reservation::where('email_id', $emailId)
-        ->with('place', 'services', 'dates', 'hours',' email')
+        // $this->reservation = Reservation::where('email_id', $emailId)
+        // ->with(['place', 'services', 'dates', 'hours', 'email'])
+        // ->first();
+        $this->reservation = Reservation::with(['place', 'services', 'dates', 'hours', 'email'])
+        ->where('reservations.email_id', $emailId)
         ->first();
         $this->reservation->email->update([
             'reservation' => true
