@@ -42,11 +42,6 @@ Route::group(['middleware' => 'auth'], function() {
 
     // Reportes
     Route::get('/reports', Reports::class);
-    // Route::get('/donwload-place/{id}', [ReportsController::class, 'downloadPlace'])->name('download-place','{id}');
-    Route::get('/download-place/{id}', [ReportsController::class, 'downloadPlace'])->name('download-place');
-    // Route::get('/download-place/{id}/{dateFrom}/{dateTo}', [ReportsController::class, 'downloadPlace'])->name('download-place');
-    Route::get('/download-dates/{id}/{dateFrom}/{dateTo}', [ReportsController::class, 'downloadDates'])->name('download-dates');
-
 
     // Email
     Route::get('/confirmation/{id}', 'ConfirmationEmailController@confirmationEmail');

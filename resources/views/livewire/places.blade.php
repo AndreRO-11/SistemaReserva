@@ -7,7 +7,7 @@
                 <label for="selectedDates"><h6>Fecha a buscar:</h6></label>
             </div>
             <div class="col-2 col-sm-2">
-                <input wire:model="selectedDates" multiple class="form-control" type="date" id="selectedDates">
+                <input wire:model="selectedDates" class="form-control" type="date" id="selectedDates" required min="{{ \Carbon\Carbon::tomorrow()->toDateString() }}">
             </div>
             @auth
             <div class="col-2 col-sm-2">
@@ -25,35 +25,34 @@
         @else
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             @foreach ($unreservedPlaces as $place)
-            <div class="col">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ $place->code }} <span class="badge text-bg-info">{{ $place->capacity }}</span></h5>
-                        <div class="card-text">
-                            <div class="m-1">
-                                <h7>Edificio {{ $place->building->building }}, Piso {{ $place->floor }}</h7>
-                                <br>
-                                <h7>{{ $place->building->campus }}, {{ $place->building->city }}</h7>
-                            </div>
-                            <div class="m-2">
-                                @foreach ($place->details as $detail)
-                                <span class="m-1 badge text-bg-info">{{ $detail->detail}}</span>
-                                @endforeach
-                            </div>
-                            <div class="m-2">
-
-                            </div>
-                            <div class="opciones_boton">
-                                <button wire:click="book({{ $place->id }})" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#reservationModal">Reservar</button>
-                                @auth
-                                <button wire:click="edit({{ $place->id }})" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#placeModal"><i class="bi bi-pencil-square"></i></button>
-                                <button wire:click="delete({{ $place->id }})" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
-                                @endauth
+                <div class="col">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ $place->code }} <span class="badge text-bg-info">{{ $place->capacity }}</span></h5>
+                            <div class="card-text">
+                                <div class="m-1">
+                                    <h7>Edificio {{ $place->building->building }}, Piso {{ $place->floor }}</h7>
+                                    <br>
+                                    <h7>{{ $place->building->campus }}, {{ $place->building->city }}</h7>
+                                </div>
+                                <div class="m-2">
+                                    @foreach ($place->details as $detail)
+                                    <span class="m-1 badge text-bg-info">{{ $detail->detail}}</span>
+                                    @endforeach
+                                </div>
+                                <div class="m-2">
+                                </div>
+                                <div class="opciones_boton">
+                                    <button wire:click="book({{ $place->id }})" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#reservationModal">Reservar</button>
+                                    @auth
+                                    <button wire:click="edit({{ $place->id }})" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#placeModal"><i class="bi bi-pencil-square"></i></button>
+                                    <button wire:click="delete({{ $place->id }})" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                                    @endauth
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
             @endforeach
         </div>
         @endif
@@ -230,8 +229,8 @@
                                         <p>Horas disponibles:</p>
                                             <div class="form-check">
                                                 @foreach($availableHours as $hour)
-                                                <input wire:model="selectedHours" class="btn-check" type="checkbox" id="selectedHours{{ $hour['hour']['id'] }}" value="{{ $hour['hour']['id'] }}">
-                                                <label class="btn btn-outline-secondary btn-sm m-1" for="selectedHours{{ $hour['hour']['id'] }}">{{ $hour['formatted_hour']}}</label>
+                                                    <input wire:model="selectedHours" class="btn-check" type="checkbox" id="selectedHours{{ $hour['hour']['id'] }}" value="{{ $hour['hour']['id'] }}">
+                                                    <label class="btn btn-outline-secondary btn-sm m-1" for="selectedHours{{ $hour['hour']['id'] }}">{{ $hour['formatted_hour']}}</label>
                                                 @endforeach
                                             </div>
                                     </div>

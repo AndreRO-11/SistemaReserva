@@ -64,7 +64,8 @@
                         @guest
                         <div class="container">
                             <div class="boton_login text-end">
-                                <span><a href="/login" class="btn"><i class="bi bi-person-fill"></i></a></span>
+                                <a href="/login" class="btn" style="font-size: small">INICIAR SESIÓN</i></a>
+                                {{-- <span><a href="/login" class="btn"><i class="bi bi-person-fill"></i></a></span> --}}
                             </div>
                         </div>
                         @endguest

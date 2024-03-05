@@ -39,9 +39,6 @@
             position: fixed;
             bottom: 0;
         }
-        h4 {
-            font-size: larger;
-        }
         table{
             width: 100%;
             border-top: 1px solid black;
@@ -67,79 +64,89 @@
     <div class="container">
 
         @foreach ($data as $place)
-            <h4>Espacio: {{ $place->code }}</h4>
+            <h2>Espacio: {{ $place->code }}</h2>
+            <p style="font-weight: bold">Reservas realizadas entre las fechas: {{ \Carbon\Carbon::parse($dateFrom)->format('d-m-Y') }} - {{ \Carbon\Carbon::parse($dateTo)->format('d-m-Y') }}</p>
             <p class="mt-2">{{ $place->building->building }}, Piso {{ $place->floor }} - {{ $place->building->campus }}, {{ $place->building->city }}</p>
             <p>
                 Detalles del espacio:
                 {{ implode(', ', $place->details->pluck('detail')->toArray()) }}.
             </p>
-            <div class="table-responsive" style="margin-top: 20px">
-                <table class="table table-sm">
-                    <tr class="tr_divider">
-                        <th scope="col">Total de reservas: {{ count($place->reservations) }}</th>
-                        <th scope="col">Pendientes: {{ $pending }}</th>
-                        <th scope="col">Aprobados: {{ $approved }}</th>
-                        <th scope="col">Rechazados: {{ $rejected }}</th>
-                    </tr>
-                </table>
-            </div>
 
-            <div class="table-responsive" style="margin-top: 20px">
-                <table class="table table-sm">
-                    <thead>
-                        <tr class="text_left">
-                            <th scope="col">Fecha:</th>
-                            <th scope="col">Horario:</th>
-                            <th scope="col">Actividad:</th>
-                            <th scope="col">Proyecto asociado:</th>
-                            <th scope="col">Asistentes:</th>
-                            <th scope="col">Servicios:</th>
-                            <th scope="col">Estatus:</th>
-
+            @if ($totalReservations === 0)
+                <br>
+                <h4>No existen reservas realizadas dentro de las fechas seleccionadas.</h4>
+            @else
+                <div class="table-responsive" style="margin-top: 20px">
+                    <table class="table">
+                        <tr class="tr_divider">
+                            <th scope="col">Total de reservas: {{ $totalReservations }}</th>
+                            <th scope="col">Pendientes: {{ $pending }}</th>
+                            <th scope="col">Aprobados: {{ $approved }}</th>
+                            <th scope="col">Rechazados: {{ $rejected }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($place->reservations as $reservation)
-                            <tr>
-                                <td>{{ \Carbon\Carbon::parse(($reservation->dates->first())->date)->format('d-m-Y') }}</td>
-                                <td>
-                                    @if ($reservation->hours->isNotEmpty())
-                                        {{ \Carbon\Carbon::parse($reservation->hours->min('hour'))->format('H:i') }}
-                                        -
-                                        {{ \Carbon\Carbon::parse($reservation->hours->max('hour'))->addMinutes(40)->format('H:i') }}
-                                    @endif
-                                </td>
-                                <td>{{ $reservation->activity }}</td>
-                                <td>
-                                    @if ($reservation->associated_project) Sí @else No @endif
-                                </td>
-                                <td>{{ $reservation->assistants }}</td>
-                                <td>
-                                    @foreach ($reservation->services as $service)
-                                        {{ $service->service }}
-                                    @endforeach
-                                </td>
-                                <td>
-                                    @switch($reservation->status->value)
-                                        @case('APROBADO')
-                                            APROBADO
-                                            @break
+                    </table>
+                </div>
 
-                                        @case('RECHAZADO')
-                                            RECHAZADO
-                                            @break
+                <div class="table-responsive" style="margin-top: 20px">
+                    <table class="table">
+                        <thead>
+                            <tr class="text_left">
+                                <th scope="col">Fecha:</th>
+                                <th scope="col">Horario:</th>
+                                <th scope="col">Actividad:</th>
+                                <th scope="col">Proyecto asociado:</th>
+                                <th scope="col">Asistentes:</th>
+                                <th scope="col">Servicios:</th>
+                                <th scope="col">Estatus:</th>
 
-                                        @default
-                                            PENDIENTE
-
-                                    @endswitch
-                                </td>
                             </tr>
-                        @endforeach
+                        </thead>
+                        <tbody>
+                            @foreach ($place->reservations as $reservation)
+                                @if ($reservation->dates->first()->date >= $dateFrom && $reservation->dates->first()->date <= $dateTo)
+                                <tr>
+                                    <td>{{ \Carbon\Carbon::parse(($reservation->dates->first())->date)->format('d-m-Y') }}</td>
+                                    <td>
+                                        @if ($reservation->hours->isNotEmpty())
+                                            {{ \Carbon\Carbon::parse($reservation->hours->min('hour'))->format('H:i') }}
+                                            -
+                                            {{ \Carbon\Carbon::parse($reservation->hours->max('hour'))->addMinutes(40)->format('H:i') }}
+                                        @endif
+                                    </td>
+                                    <td>{{ $reservation->activity }}</td>
+                                    <td>
+                                        @if ($reservation->associated_project) Sí @else No @endif
+                                    </td>
+                                    <td>{{ $reservation->assistants }}</td>
+                                    <td>
+                                        @foreach ($reservation->services as $service)
+                                            {{ $service->service }}
+                                        @endforeach
+                                    </td>
+                                    <td>
+                                        @switch($reservation->status->value)
+                                            @case('APROBADO')
+                                                APROBADO
+                                                @break
 
-                    </tbody>
-                </table>
-            </div>
+                                            @case('RECHAZADO')
+                                                RECHAZADO
+                                                @break
+
+                                            @default
+                                                PENDIENTE
+
+                                        @endswitch
+                                    </td>
+                                </tr>
+                                @endif
+                            @endforeach
+
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+
         @endforeach
 
     </div>

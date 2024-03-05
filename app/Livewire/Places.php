@@ -23,7 +23,7 @@ class Places extends Component
 {
     public $editPlace = null, $dateFilter, $selectedDate, $reservationPlace, $localDate, $unreservedPlaces = [], $availableHours = [];
     public $places, $details, $buildings, $types, $seats, $services;
-    public $selectedDetails = [], $selectedServices = [], $selectedHours = [], $selectedDates = [];
+    public $selectedDetails = [], $selectedServices = [], $selectedHours = [], $selectedDates;
 
     public $placeEdit = [
         'code' => '',
@@ -117,10 +117,14 @@ class Places extends Component
 
     public function book($id)
     {
+        $this->validate([
+            'selectedDates' => 'required|date|after_or_equal:tomorrow',
+        ]);
+
         $this->editPlace = $id;
         $place = Place::with('building', 'details')->find($id);
         $this->reservationPlace = $place;
-        $this->availableHours = $this->getAvailableHours();
+        $this->availableHours = $this->getAvailableHours($id, $this->selectedDates);
     }
 
     public function bookSave()
@@ -131,8 +135,8 @@ class Places extends Component
             'reservationEdit.userType' => 'required',
             'reservationEdit.activity' => 'required',
             'reservationEdit.assistants' => 'required|numeric|min:1',
-            'selectedDates' => 'required',
-            'selectedHours' => 'required',
+            'selectedDates' => 'required|date|after_or_equal:tomorrow',
+            'selectedHours' => 'required|array',
         ]);
 
         $emailId = Email::create();
@@ -159,6 +163,10 @@ class Places extends Component
             'place_id' => $this->reservationPlace->id,
         ]);
 
+        $selectedDatesArray = is_array($this->selectedDates) ? $this->selectedDates : [$this->selectedDates];
+        $this->availableHours = $this->getAvailableHours($this->editPlace, $selectedDatesArray);
+
+
         $reservation->services()->attach($this->selectedServices);
 
         if (!is_array($this->selectedDates)) {
@@ -169,29 +177,30 @@ class Places extends Component
             $reservation->dates()->attach($date->id);
         }
         $reservation->hours()->attach($this->selectedHours);
-        // $reservation->dates()->attach($this->selectedDates);
         $this->selectedDates = [];
         $this->selectedHours = [];
 
         // Email de reserva realizada
-        // Mail::to($clientId->email)->send(new ReservationEmail($emailId));
+        // Mail::to($clientId->email)->send(new ReservationEmail($reservation->email_id));
 
         $this->reset();
     }
 
-    public function getAvailableHours()
+    public function getAvailableHours($placeId, $selectedDate)
     {
-        if (!$this->selectedDates || !$this->editPlace) {
-            return [];
-        }
         $selectedPlace = Place::with(['reservations.dates', 'reservations.hours'])
-        ->where('id', $this->editPlace)
-        ->first();
+        ->where('id', $placeId)
+            ->first();
+
         $reservedHours = $selectedPlace->reservations
-        ->flatMap(function ($reservation) {
-            return $reservation->hours->pluck('id')->toArray();
-        })
-        ->toArray();
+            ->flatMap(function ($reservation) use ($selectedDate) {
+                return $reservation->dates
+                    ->where('date', $selectedDate)
+                    ->flatMap(function ($date) {
+                        return $date->hours->pluck('id')->toArray();
+                    });
+            })
+            ->toArray();
 
         $allHours = Hour::all()->pluck('id')->toArray();
         $availableHours = array_diff($allHours, $reservedHours);
@@ -203,12 +212,17 @@ class Places extends Component
                 'formatted_hour' => Carbon::parse($hour->hour)->format('H:i'),
             ];
         });
+
         return $formattedHours;
+    }
+
+    public function mount()
+    {
+        $this->selectedDates = \Carbon\Carbon::tomorrow()->toDateString();
     }
 
     public function render()
     {
-        $this->selectedDates = Carbon::now()->format('Y-m-d');
         $this->buildings = Building::where('active', true)->get();
         $this->types = Type::all();
         $this->seats = Seat::all();
@@ -230,7 +244,7 @@ class Places extends Component
             'types' => $this->types,
             'seats' => $this->seats,
             'services' => $this->services,
-            'reservationPlace' => $this->reservationPlace
+            'reservationPlace' => $this->reservationPlace,
         ]);
     }
 }
