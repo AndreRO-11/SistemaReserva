@@ -14,6 +14,6 @@ class Date extends Model
     //N:M
     public function reservations(): BelongsToMany
     {
-        return $this->belongsToMany(Date::class);
+        return $this->belongsToMany(Reservation::class);
     }
 }

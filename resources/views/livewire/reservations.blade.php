@@ -230,11 +230,15 @@
                                         <textarea wire:model="reservationEdit.comment" id="reservationEdit.comment" class="form-control" rows="5">{!! $reservationEdit['comment'] !!}</textarea>
                                     </div> --}}
                                     <div class="mt-2">
+                                        <label class="form-label" for="reservationEdit.comment">Observaciones:</label>
+                                        <textarea wire:model="reservationEdit.comment" id="reservationEdit.comment" class="form-control"  rows="5"></textarea>
+                                    </div>
+                                    {{-- <div class="mt-2">
                                         <label class="form-label">Observaciones:</label>
                                         <textarea wire:model="comment" class="form-control" rows="5">
-                                            {{-- {!! $reservationEdit['comment'] !!} --}}
+                                            {{-- {!! $reservationEdit['comment'] !!} 
                                         </textarea>
-                                    </div>
+                                    </div> --}}
                                     <div class="mt-2 cols-sm-2 d-grid">
                                         <p>Servicios disponibles:</p>
                                         <ul style="list-style-type: none;">

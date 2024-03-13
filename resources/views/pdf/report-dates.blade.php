@@ -62,15 +62,15 @@
     <div class="report_break" style="margin-top: 0"></div>
 
     <div class="container">
-
-        <h2>Fecha: {{ \Carbon\Carbon::parse($dateFrom)->format('d-m-Y') }}</h2>
+        <h4>Reservas realizadas entre las fechas: {{ \Carbon\Carbon::parse($dateFrom)->format('d-m-Y') }} - {{ \Carbon\Carbon::parse($dateTo)->format('d-m-Y') }}</h4>
 
         @if (empty($data))
             <br>
-            <h4>No existen reservas realizadas dentro de la fecha seleccionada.</h4>
+            <h4>No existen reservas realizadas dentro de las fechas seleccionadas.</h4>
         @else
             @foreach ($data as $place)
-                @if (count($place->reservations) > 0)
+
+                @if (!empty($place->totalReservations))
                     <h3 style="margin-top: 30px">Espacio: {{ $place->code }}</h3>
                     <p class="mt-2">{{ $place->building->building }}, Piso {{ $place->floor }} - {{ $place->building->campus }}, {{ $place->building->city }}</p>
                     <p>
@@ -105,7 +105,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($place->reservations as $reservation)
-                                    @if ($reservation->dates->first()->date === $dateFrom)
+                                    @if ($reservation->dates->first()->date >= $dateFrom && $reservation->dates->first()->date <= $dateTo)
                                     <tr>
                                         <td>{{ \Carbon\Carbon::parse(($reservation->dates->first())->date)->format('d-m-Y') }}</td>
                                         <td>
@@ -149,9 +149,6 @@
                 @endif
             @endforeach
         @endif
-
-
-
 
     </div>
 

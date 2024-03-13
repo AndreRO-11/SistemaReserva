@@ -19,6 +19,6 @@ class Email extends Model
     //1:1
     public function reservation(): BelongsTo
     {
-        return $this->belongsTo(Reservation::class, 'reservation.email_id');
+        return $this->belongsTo(Reservation::class);
     }
 }

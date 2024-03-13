@@ -11,7 +11,8 @@ use Livewire\Component;
 class Reports extends Component
 {
     public $option;
-    public $dateFrom, $dateTo;
+    public $dateFrom;
+    public $dateTo;
     public $places;
 
     public function reportPlace()
@@ -23,7 +24,6 @@ class Reports extends Component
     }
 
     public function downloadPlace($id)
-    // public function downloadPlace($id)
     {
         $pathLogo = public_path('images/logo_VRIP.png');
         $pathEscudo = public_path('images/escudo-color-gradiente.png');
@@ -126,8 +126,6 @@ class Reports extends Component
 
     public function downloadDates()
     {
-        $this->option = 'date';
-
         $data = Place::where('places.active', true)
         ->with([
             'details',
@@ -154,6 +152,11 @@ class Reports extends Component
         } else {
             $dateFrom = $this->dateFrom;
         }
+        if (empty($this->dateTo)) {
+            $dateTo = Carbon::today();
+        } else {
+            $dateTo = $this->dateTo;
+        }
 
         foreach ($data as $place) {
             $totalReservations = 0;
@@ -163,7 +166,7 @@ class Reports extends Component
 
             foreach ($place->reservations as $reservation) {
                 foreach ($reservation->dates as $date) {
-                    if ($date->date == $dateFrom) {
+                    if ($date->date >= $dateFrom && $date->date <= $dateTo) {
                         $totalReservations++;
                         switch ($reservation->status->value) {
                             case 'PENDIENTE':
@@ -188,6 +191,7 @@ class Reports extends Component
         $pdf = new Dompdf();
         $pdf->loadHtml(view('pdf.report-dates', [
             'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
             'data' => $data,
         ])
         ->render());
