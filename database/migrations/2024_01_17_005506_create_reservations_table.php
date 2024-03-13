@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('status')->default('PENDIENTE');
             $table->boolean('active')->default(true);
             $table->foreignId('client_id')->references('id')->on('clients')->nullable();
-            $table->foreignId('email_id')->references('id')->on('emails')->nullable();
+            $table->foreignId('email_id')->references('id')->on('emails')->nullable()->onDelete('cascade');
             $table->foreignId('place_id')->references('id')->on('places')->nullable();
 
             $table->timestamps();

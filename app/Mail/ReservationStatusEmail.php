@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\Client;
 use App\Models\Reservation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,7 +12,7 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\URL;
 
-class ReservationEmail extends Mailable
+class ReservationStatusEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -28,7 +27,7 @@ class ReservationEmail extends Mailable
         ->find($id);
 
         $this->reservation->email->update([
-            'reservation' => true
+            'reservation_status' => true
         ]);
 
         $url = URL::to('/emails.reservation-email/' . $this->reservation->email->id);
@@ -42,7 +41,7 @@ class ReservationEmail extends Mailable
     {
         return new Envelope(
             from: new Address(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME')),
-            subject: 'Reservación de espacio UBB',
+            subject: 'Actualización de reserva de espacio UBB',
         );
     }
 
@@ -52,7 +51,7 @@ class ReservationEmail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.reservation-email',
+            view: 'emails.reservation-status-email',
         );
     }
 

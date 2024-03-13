@@ -30,9 +30,9 @@ class Reservation extends Model
     ];
 
     //1:1
-    public function email(): HasOne
+    public function email(): BelongsTo
     {
-        return $this->hasOne(Email::class);
+        return $this->belongsTo(Email::class);
     }
 
     public function place(): BelongsTo

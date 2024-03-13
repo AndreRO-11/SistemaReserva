@@ -3,9 +3,11 @@
 namespace App\Livewire;
 
 use App\Enums\ReservationStatusEnum;
+use App\Mail\ReservationStatusEmail;
 use App\Models\Reservation;
 use App\Models\Service;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 
 class Reservations extends Component
@@ -44,8 +46,7 @@ class Reservations extends Component
         $this->reservationEdit['activity'] = $reservation->activity;
         $this->reservationEdit['assistants'] = $reservation->assistants;
         $this->reservationEdit['associated_project'] = $reservation->associated_project;
-        // $this->reservationEdit['comment'] = $reservation->comment;
-        $this->comment = $reservation->comment;
+        $this->reservationEdit['comment'] = $reservation->comment;
 
         $this->placeEdit = $reservation->place;
         $this->clientEdit = $reservation->client;
@@ -84,18 +85,22 @@ class Reservations extends Component
 
     public function statusApproved($id)
     {
-        $reservation = Reservation::find($id);
+        $reservation = Reservation::with(['client'])->where('id', $id)->first();
         $reservation->update([
             'status' => ReservationStatusEnum::approved
         ]);
+        // Email
+        Mail::to($reservation->client->email)->send(new ReservationStatusEmail($reservation->id));
     }
 
     public function statusReject($id)
     {
-        $reservation = Reservation::find($id);
+        $reservation = Reservation::with(['client'])->where('id', $id)->first();
         $reservation->update([
             'status' => ReservationStatusEnum::rejected
         ]);
+        // Email
+        Mail::to($reservation->client->email)->send(new ReservationStatusEmail($reservation->id));
     }
 
     public function filterByStatus($status)

@@ -7,7 +7,7 @@
                 <label for="selectedDates"><h6>Fecha a buscar:</h6></label>
             </div>
             <div class="col-2 col-sm-2">
-                <input wire:model="selectedDates" class="form-control" type="date" id="selectedDates" required min="{{ \Carbon\Carbon::tomorrow()->toDateString() }}">
+                <input wire:model="selectedDates" wire:change="actualizarUnreservedPlaces" class="form-control" type="date" id="selectedDates" required min="{{ \Carbon\Carbon::tomorrow()->toDateString() }}">
             </div>
             @auth
             <div class="col-2 col-sm-2">
@@ -25,7 +25,41 @@
         @else
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             @foreach ($unreservedPlaces as $place)
-                <div class="col">
+                @if ($place->availableHours > 0)
+                    <div class="col">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">{{ $place->code }} <span class="badge text-bg-info">{{ $place->capacity }}</span></h5>
+                                <div class="card-text">
+                                    <div class="m-1 text-center">
+                                        <p style="margin-top:0; margin-bottom:0;">Edificio {{ $place->building->building }}, Piso {{ $place->floor }}</p>
+                                        <p style="margin-top:0; margin-bottom:0;">{{ $place->building->campus }}, {{ $place->building->city }}</p>
+                                    </div>
+                                    <div class="m-1 text-center">
+                                    @foreach ($place->details as $detail)
+                                    <span class="m-1 badge text-bg-info">{{ $detail->detail}}</span>
+                                    @endforeach
+                                    </div>
+                                    <div class="text-center">
+                                        <p style="margin-top:0; margin-bottom:0;">Horarios disponibles:</p>
+                                        @foreach ($place->availableHours as $hour)
+                                            <button class="btn btn-sm btn-secondary mt-1" disabled>{{ $hour['formatted_hour'] }}</button>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                <div class="mt-2 opciones_boton">
+                                    <button wire:click="book({{ $place->id }})" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#reservationModal">Reservar</button>
+                                    @auth
+                                    <button wire:click="edit({{ $place->id }})" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#placeModal"><i class="bi bi-pencil-square"></i></button>
+                                    <button wire:click="delete({{ $place->id }})" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                                    @endauth
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- <div class="col">
                     <div class="card text-center">
                         <div class="card-body">
                             <h5 class="card-title">{{ $place->code }} <span class="badge text-bg-info">{{ $place->capacity }}</span></h5>
@@ -52,11 +86,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
             @endforeach
         </div>
         @endif
-
 
         <div wire:ignore.self class="modal fade" id="placeModal" tabindex="-1" aria-labelledby="placeModal" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -195,6 +228,9 @@
                                     <div class="mt-2">
                                         <label class="form-label" for="reservationEdit.assistants">Cantidad asistentes</label>
                                         <input wire:model="reservationEdit.assistants" id="reservationEdit.assistants" class="form-control" type="number" required>
+                                        @error('assistants')
+                                            <span class="error text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                     <div class="mt-2">
                                         <label class="form-check-label" for="reservationEdit.associated_project">Proyecto asociado (Si hay)</label>

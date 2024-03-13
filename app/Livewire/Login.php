@@ -30,14 +30,6 @@ class Login extends Component
         return redirect()->to('/');
     }
 
-    // public function logout(Request $request)
-    // {
-    //     Auth::logout();
-    //     $request->session()->invalidate();
-    //     $request->session()->regenerateToken();
-    //     return $this->redirect('/');
-    // }
-
     public function render()
     {
         if(Auth::check()) {

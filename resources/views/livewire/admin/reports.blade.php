@@ -60,6 +60,10 @@
                     <label for="dateFrom">Fecha desde:</label>
                     <input wire:model="dateFrom" id="dateFrom" type="date" class="form-control">
                 </div>
+                <div class="col-2">
+                    <label for="dateTo">Fecha hasta:</label>
+                    <input wire:model="dateTo" id="dateTo" type="date" class="form-control">
+                </div>
             </div>
 
             <div class="opciones_boton" style="margin-top: 30px">
