@@ -45,6 +45,11 @@ class Reservation extends Model
         return $this->belongsTo(Client::class);
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     //N:M
     public function services(): BelongsToMany
     {

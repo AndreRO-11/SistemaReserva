@@ -34,6 +34,9 @@
                             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                                 <ul class="navbar-nav mb-2 mb-lg-0 mx-auto">
                                     <li class="nav-item">
+                                        <a wire:navigate class="nav-link" href="/users">USUARIOS</a>
+                                    </li>
+                                    <li class="nav-item">
                                         <a wire:navigate class="nav-link" href="/reports">REPORTES</a>
                                     </li>
                                     <li class="nav-item">
