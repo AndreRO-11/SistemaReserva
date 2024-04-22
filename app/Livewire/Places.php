@@ -169,7 +169,6 @@ class Places extends Component
             $selectedDatesArray = is_array($this->selectedDates) ? $this->selectedDates : [$this->selectedDates];
             $this->availableHours = $this->getAvailableHours($this->editPlace, $selectedDatesArray);
 
-
             $reservation->services()->attach($this->selectedServices);
 
             if (!is_array($this->selectedDates)) {

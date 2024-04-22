@@ -8,6 +8,7 @@ use App\Livewire\Places;
 use App\Livewire\Reservations;
 use App\Livewire\Seats;
 use App\Livewire\Services;
+use App\Livewire\Admin\Users;
 use App\Livewire\Types;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +33,8 @@ Route::get('/places', Places::class)->name('places');
 // Admin
 Route::group(['middleware' => 'auth'], function() {
 
+    Route::get('/users', Users::class);
+
     Route::get('/buildings', Buildings::class);
     Route::get('/seats', Seats::class);
     Route::get('/types', Types::class);
@@ -45,7 +48,7 @@ Route::group(['middleware' => 'auth'], function() {
 
     // Email
     Route::get('/confirmation/{id}', 'ConfirmationEmailController@confirmationEmail');
-    Route::get('/reservation/{id', 'ReservationEmailController@reservationEmail');
+    Route::get('/reservation/{id}', 'ReservationEmailController@reservationEmail');
 });
 
 

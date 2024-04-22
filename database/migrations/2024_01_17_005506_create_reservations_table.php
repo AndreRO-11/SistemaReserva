@@ -24,6 +24,7 @@ return new class extends Migration
             $table->foreignId('client_id')->references('id')->on('clients')->nullable();
             $table->foreignId('email_id')->references('id')->on('emails')->nullable()->onDelete('cascade');
             $table->foreignId('place_id')->references('id')->on('places')->nullable();
+            $table->foreignId('user_id')->references('id')->on('users')->nullable();
 
             $table->timestamps();
         });
