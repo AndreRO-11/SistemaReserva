@@ -21,10 +21,10 @@ return new class extends Migration
             $table->integer('assistants');
             $table->string('status')->default('PENDIENTE');
             $table->boolean('active')->default(true);
-            $table->foreignId('client_id')->references('id')->on('clients')->nullable();
-            $table->foreignId('email_id')->references('id')->on('emails')->nullable()->onDelete('cascade');
-            $table->foreignId('place_id')->references('id')->on('places')->nullable();
-            $table->foreignId('user_id')->references('id')->on('users')->nullable();
+            $table->foreignId('client_id')->references('id')->on('clients');
+            $table->foreignId('email_id')->references('id')->on('emails')->onDelete('cascade');
+            $table->foreignId('place_id')->references('id')->on('places');
+            $table->foreignId('user_id')->nullable()->references('id')->on('users');
 
             $table->timestamps();
         });

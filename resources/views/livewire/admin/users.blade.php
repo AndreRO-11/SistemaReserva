@@ -19,14 +19,12 @@
                     @enderror
                 </div>
                 <div class="col">
-                    <input wire:model="campus" type="text" class="form-control @error('campus') is-invalid @enderror"
-                        placeholder="Campus" required>
-                </div>
-                <div class="col">
-                    <select wire:model='city' class="form-select @error('city') is-invalid @enderror" required>
-                        <option value="">Ciudad</option>
-                        <option value="CHILLAN">CHILLAN</option>
-                        <option value="CONCEPCION">CONCEPCION</option>
+                    <select wire:model='campus_id' class="form-select @error('campus_id') is-invalid @enderror"
+                        required>
+                        <option value="">Campus</option>
+                        @foreach ($campuses as $campus)
+                            <option value="{{ $campus->id }}">{{ $campus->campus }}, {{ $campus->city }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col opciones_boton m-2">
@@ -47,55 +45,45 @@
                             </th>
                         @endif
                         <th scope="col">Campus</th>
-                        <th scope="col">Ciudad</th>
                         <th scope="col" class="text-center">Opciones</th>
                     </tr>
                 </thead>
                 <tbody class="table-group-divider">
                     @foreach ($users as $user)
                         <tr class="@if (!$user->active) table-danger @endif">
-
-                            <td>
-                                @if ($editUser !== $user->id)
-                                    {{ $user->name }}
-                                @else
+                            @if ($editUser !== $user->id)
+                                <td>{{ $user->name }}</td>
+                                <td>{{ $user->email }}</td>
+                                @if ($changePassword && $auth->id === $user->id)
+                                    <td>
+                                        <input wire:model="newPassword" type="text"
+                                            class="form-control @error('newPassword') is-invalid @enderror" required>
+                                    </td>
+                                @endif
+                                <td>{{ $user->campus->campus }}, {{ $user->campus->city }}</td>
+                            @else
+                                <td>
                                     <input wire:model="user.name" type="text"
                                         class="form-control @error('user.name') is-invalid @enderror" required>
-                                @endif
-                            </td>
-                            <td>
-                                @if ($editUser !== $user->id)
-                                    {{ $user->email }}
-                                @else
+                                </td>
+                                <td>
                                     <input wire:model="user.email" type="text"
                                         class="form-control @error('user.email') is-invalid @enderror" required>
-                                @endif
-                            </td>
-                            @if ($changePassword && $auth->id === $user->id)
+                                    @error('user.email')
+                                        <span class="error text-danger">{{ $message }}</span>
+                                    @enderror
+                                </td>
                                 <td>
-                                    <input wire:model="newPassword" type="text"
-                                        class="form-control @error('newPassword') is-invalid @enderror" required>
+                                    <select wire:model='user.campus_id'
+                                        class="form-select @error('user.campus_id') is-invalid @enderror" required>
+                                        @foreach ($campuses as $campus)
+                                            <option value="{{ $campus->id }}">{{ $campus->campus }},
+                                                {{ $campus->city }}</option>
+                                        @endforeach
+                                    </select>
                                 </td>
                             @endif
-                            <td>
-                                @if ($editUser !== $user->id)
-                                    {{ $user->campus }}
-                                @else
-                                    <input wire:model="user.campus" type="text"
-                                        class="form-control @error('user.campus') is-invalid @enderror" required>
-                                @endif
-                            </td>
-                            <td>
-                                @if ($editUser !== $user->id)
-                                    {{ $user->city }}
-                                @else
-                                    <select wire:model='user.city'
-                                        class="form-select @error('user.city') is-invalid @enderror" required>
-                                        <option value="CHILLAN">CHILLAN</option>
-                                        <option value="CONCEPCION">CONCEPCION</option>
-                                    </select>
-                                @endif
-                            </td>
+
                             <td>
                                 <div class="opciones_boton">
                                     @if ($editUser !== $user->id)
@@ -108,20 +96,25 @@
                                                 <button wire:click="setPassword" class="btn btn-success">
                                                     <i class="bi bi-check-lg"></i>
                                                 </button>
+                                                <button wire:click="close" class="btn btn-secondary"><i
+                                                        class="bi bi-x-lg"></i></button>
                                             @endif
+                                            <button wire:click="edit({{ $user->id }})" class="btn btn-warning"><i
+                                                    class="bi bi-pencil-square text-dark"></i></button>
                                         @endif
-                                        <button wire:click="edit({{ $user->id }})" class="btn btn-warning"><i
-                                                class="bi bi-pencil-square text-dark"></i></button>
 
                                         @if (!$user->active)
-                                            <button wire:click="setActive({{ $user->id }})" class="btn btn-success">
+                                            <button wire:click="setActive({{ $user->id }})"
+                                                class="btn btn-success">
                                                 <i class="bi bi-check-lg"></i>
                                             </button>
                                         @else
-                                            <button wire:click="setInactive({{ $user->id }})"
-                                                class="btn btn-danger">
-                                                <i class="bi bi-x-lg"></i>
-                                            </button>
+                                            @if (!$changePassword)
+                                                <button wire:click="setInactive({{ $user->id }})"
+                                                    class="btn btn-danger">
+                                                    <i class="bi bi-trash3"></i>
+                                                </button>
+                                            @endif
                                         @endif
                                     @else
                                         <button wire:click="update" class="btn btn-success"><i
@@ -129,9 +122,9 @@
                                         <button wire:click="close" class="btn btn-secondary"><i
                                                 class="bi bi-x-lg"></i></button>
                                     @endif
-
                                 </div>
                             </td>
+
                         </tr>
                     @endforeach
                 </tbody>

@@ -49,7 +49,10 @@
                                         <a wire:navigate class="nav-link" href="/services">SERVICIOS</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a wire:navigate class="nav-link" href="buildings">UBICACIONES</a>
+                                        <a wire:navigate class="nav-link" href="buildings">EDIFICIOS</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a wire:navigate class="nav-link" href="campus">SEDES</a>
                                     </li>
                                     <li class="nav-item">
                                         <a wire:navigate class="nav-link" href="/seats">ASIENTOS</a>

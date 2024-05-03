@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\Campus;
 use Livewire\Component;
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -10,17 +11,38 @@ use Illuminate\Support\Facades\Hash;
 
 class Users extends Component
 {
-    public $name, $campus, $city, $email, $password;
+    public $name, $campus_id, $email, $password;
 
-    public $auth, $changePassword = false, $newPassword;
+    public $auth, $changePassword = false, $newPassword, $campuses;
 
     // Editar user
     public $editUser = null;
     public $user = [
         'name' => '',
         'email' => '',
-        'city' => ''
+        'campus_id' => ''
     ];
+
+    public function register()
+    {
+        $this->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users|ends_with:@ubiobio.cl,.ubiobio.cl',
+            'password' => 'required|min:6',
+            'campus_id' => 'required'
+        ]);
+
+        $user = new User();
+
+        $user->name = $this->name;
+        $user->email = $this->email;
+        $user->password = $this->password;
+        $user->campus_id = $this->campus_id;
+        $user->remember_token = Str::random(32);
+        $user->save();
+
+        $this->reset();
+    }
 
     public function edit($id)
     {
@@ -30,8 +52,7 @@ class Users extends Component
 
         $this->user['name'] = $user->name;
         $this->user['email'] = $user->email;
-        $this->user['campus'] = $user->campus;
-        $this->user['city'] = $user->city;
+        $this->user['campus_id'] = $user->campus->id;
     }
 
     public function update()
@@ -39,70 +60,47 @@ class Users extends Component
         $this->validate([
             'user.name' => 'required',
             'user.email' => 'required|email|ends_with:@ubiobio.cl,.ubiobio.cl',
-            'user.campus' => 'required',
-            'user.city' => 'required'
+            'user.campus_id' => 'required'
         ]);
 
-        $campus = strtoupper(preg_replace('/[^a-zA-Z0-9ñÑ\s]/', '', str_replace(['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú'], ['A', 'E', 'I', 'O', 'U', 'A', 'E', 'I', 'O', 'U'], $this->user['campus'])));
+        $id = $this->editUser;
+        $email = User::where('email', $this->user['email'])->exists();
 
-        User::find($this->editUser)->update([
-            'name'=> $this->user['name'],
-            'email'=> $this->user['email'],
-            'campus'=> $campus,
-            'city'=> $this->user['city']
-        ]);
+        if (!$email) {
+            $userUpdate = User::find($id);
+            $userUpdate->name = $this->user['name'];
+            $userUpdate->email = $this->user['email'];
+            $userUpdate->campus_id = $this->user['campus_id'];
+            $userUpdate->save();
 
-        $this->reset();
-        $this->editUser = null;
+            $this->reset();
+            $this->editUser = null;
+        } else {
+            $this->addError('user.email', 'Email ya registrado.');
+        }
     }
 
     public function setInactive($id)
     {
         $user = User::find($id);
-        $user->update([
-            'active' => false
-        ]);
+        $user->active = false;
+        $user->save();
     }
 
     public function setActive($id)
     {
         $user = User::find($id);
-        $user->update([
-            'active' => true
-        ]);
+        $user->active = true;
+        $user->save();
     }
 
     public function close()
     {
         $this->editUser = null;
-    }
-
-    public function register()
-    {
-        $this->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users|ends_with:@ubiobio.cl,.ubiobio.cl',
-            'password' => 'required|min:6',
-            'campus' => 'required',
-            'city' => 'required'
-        ]);
-
-        //$campus = strtoupper(str_replace(['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú'], ['A', 'E', 'I', 'O', 'U', 'A', 'E', 'I', 'O', 'U'], $this->campus));
-        $campus = strtoupper(preg_replace('/[^a-zA-Z0-9ñÑ\s]/', '', str_replace(['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú'], ['A', 'E', 'I', 'O', 'U', 'A', 'E', 'I', 'O', 'U'], $this->campus)));
-
-        $user = new User();
-
-        $user->name = $this->name;
-        $user->email = $this->email;
-        $user->password = $this->password;
-        $user->campus = $campus;
-        $user->city = $this->city;
-        $user->remember_token = Str::random(32);
-
-        $user->save();
-
+        $this->changePassword = false;
         $this->reset();
     }
+
 
     public function toggleChangePassword()
     {
@@ -129,10 +127,13 @@ class Users extends Component
         $users = User::all();
         $this->auth = Auth::user();
 
+        $this->campuses = Campus::all();
+
         return view('livewire.admin.users', [
             'users' => $users,
             'auth' => $this->auth,
-            'changePassword' => $this->changePassword
+            'changePassword' => $this->changePassword,
+            'campuses' => $this->campuses
         ]);
     }
 }

@@ -3,38 +3,46 @@
 namespace App\Livewire;
 
 use App\Models\Building;
-use Livewire\Attributes\Validate;
+use App\Models\Campus;
 use Livewire\Component;
 
 class Buildings extends Component
 {
     public $editBuilding = null;
-    public $buildings;
+    public $buildings, $campus_id;
+    public $campuses;
 
-    #[Validate([
-        'buildingEdit.campus' => 'required',
-        'buildingEdit.address' => 'required',
-        'buildingEdit.building' => 'required',
-        'buildingEdit.city' => 'required'
-    ])]
-    public $buildingEdit = [
-        'campus' => '',
-        'address' => '',
+    public $buildingStore = [
         'building' => '',
-        'city' => '',
+        'campus_id' => '',
+    ];
 
+    public $buildingEdit = [
+        'building' => '',
+        'campus_id' => '',
     ];
 
     public function store()
     {
-        $this->validate();
-        Building::create([
-            'campus' => $this->buildingEdit['campus'],
-            'address' => $this->buildingEdit['address'],
-            'building' => $this->buildingEdit['building'],
-            'city' => $this->buildingEdit['city']
-        ]);
-        $this->reset();
+        $this->validate(([
+            'buildingStore.building' => 'required',
+            'buildingStore.campus_id' => 'required',
+        ]));
+
+        $building = Building::where('campus_id', $this->buildingStore['campus_id'])->where('building', $this->buildingStore['building'])->exists();
+
+        if (!$building) {
+            $building = strtoupper(preg_replace('/[^a-zA-Z0-9ñÑ\s]/', '', str_replace(['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ'], ['A', 'E', 'I', 'O', 'U', 'A', 'E', 'I', 'O', 'U', 'Ñ'], $this->buildingStore['building'])));
+
+            $buildingStore = new Building();
+            $buildingStore->building = $building;
+            $buildingStore->campus_id = $this->buildingStore['campus_id'];
+            $buildingStore->save();
+
+            $this->reset();
+        } else {
+            $this->addError('buildingStore.building', 'Edificio ya existe.');
+        }
     }
 
     public function edit($id)
@@ -42,23 +50,33 @@ class Buildings extends Component
         $this->editBuilding = $id;
         $building = Building::find($id);
 
-        $this->buildingEdit['campus'] = $building->campus;
-        $this->buildingEdit['address'] = $building->address;
         $this->buildingEdit['building'] = $building->building;
-        $this->buildingEdit['city'] = $building->city;
+        $this->buildingEdit['campus_id'] = $building->campus->id;
     }
 
     public function update()
     {
-        $this->validate();
-        Building::find($this->editBuilding)->update([
-            'building' => $this->buildingEdit['building'],
-            'campus' => $this->buildingEdit['campus'],
-            'address' => $this->buildingEdit['address'],
-            'city' => $this->buildingEdit['city'],
-        ]);
-        $this->reset();
-        $this->editBuilding = null;
+        $this->validate(([
+            'buildingEdit.building' => 'required',
+            'buildingEdit.campus_id' => 'required',
+        ]));
+
+        $building = Building::where('campus_id', $this->buildingEdit['campus_id'])->where('building', $this->buildingEdit['building'])->get();
+
+        if (!$building) {
+            $id = $this->editBuilding;
+            $building = strtoupper(preg_replace('/[^a-zA-Z0-9ñÑ\s]/', '', str_replace(['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ'], ['A', 'E', 'I', 'O', 'U', 'A', 'E', 'I', 'O', 'U', 'Ñ'], $this->buildingEdit['building'])));
+
+            $buildingUpdate = Building::find($id);
+            $buildingUpdate->building = $building;
+            $buildingUpdate->campus_id = $this->buildingEdit['campus_id'];
+            $buildingUpdate->save();
+
+            $this->reset();
+            $this->editBuilding = null;
+        } else {
+            $this->addError('buildingEdit.building', 'Edificio ya existe.');
+        }
     }
 
     public function close()
@@ -70,14 +88,25 @@ class Buildings extends Component
     public function delete($id)
     {
         $building = Building::find($id);
-        $building->update([
-            'active' => false
-        ]);
+        $building->active = false;
+        $building->save();
+    }
+
+    public function setActive($id)
+    {
+        $building = Building::find($id);
+        $building->active = true;
+        $building->save();
     }
 
     public function render()
     {
-        $this->buildings = Building::where('active', true)->get();
-        return view('livewire.buildings');
+        $this->buildings = Building::all();
+        $this->campuses = Campus::all();
+
+        return view('livewire.buildings', [
+            'buildings' => $this->buildings,
+            'campuses' => $this->campuses,
+        ]);
     }
 }

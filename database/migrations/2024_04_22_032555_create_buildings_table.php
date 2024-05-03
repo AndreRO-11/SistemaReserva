@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('buildings', function (Blueprint $table) {
             $table->id();
 
-            $table->string('campus');
-            $table->string('address');
             $table->string('building');
-            $table->string('city');
             $table->boolean('active')->default(true);
 
+            $table->foreignId('campus_id')->references('id')->on('campuses');
+
             $table->timestamps();
+
         });
     }
 

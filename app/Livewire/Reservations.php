@@ -9,12 +9,15 @@ use App\Models\Service;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Reservations extends Component
 {
     public $reservations, $statusFilter = null, $selectedServices = [], $selectedHours = [], $allServices = [], $showServices = [];
     public $placeEdit, $clientEdit, $hours = [], $reservationId, $comment;
 
+    public $userCity, $userCampus;
+    use WithPagination;
 
     public $reservationEdit = [
         'activity' => '',
@@ -87,7 +90,8 @@ class Reservations extends Component
     {
         $reservation = Reservation::with(['client'])->where('id', $id)->first();
         $reservation->update([
-            'status' => ReservationStatusEnum::approved
+            'status' => ReservationStatusEnum::approved,
+            'user_id' => auth()->user()->id
         ]);
         // Email
         Mail::to($reservation->client->email)->send(new ReservationStatusEmail($reservation->id));
@@ -97,7 +101,8 @@ class Reservations extends Component
     {
         $reservation = Reservation::with(['client'])->where('id', $id)->first();
         $reservation->update([
-            'status' => ReservationStatusEnum::rejected
+            'status' => ReservationStatusEnum::rejected,
+            'user_id' => auth()->user()->id
         ]);
         // Email
         Mail::to($reservation->client->email)->send(new ReservationStatusEmail($reservation->id));
@@ -110,9 +115,40 @@ class Reservations extends Component
 
     public function render()
     {
-        $this->reservations = Reservation::where('active', true)
-        ->with('place', 'client', 'hours', 'dates')
-        ->get();
+        if (auth()->check()) {
+            $user = auth()->user();
+            $this->userCity = $user->city;
+            $this->userCampus = $user->campus;
+            // $this->reservations = Reservation::with('place', 'client', 'hours', 'dates', 'place.buildings')
+            //     ->where('city', $this->userCity)
+            //     ->where('campus', $this->userCampus)
+            //     ->
+            //     ->where('active', true)
+            //    ->get();
+
+            // $this->reservations = Reservation::where('active', true)
+            //     ->with('client', 'hours', 'dates')
+            //     ->with('place')
+            //     ->whereHas('building' , function ($query) {
+            //         $query->where('city', $this->userCity)
+            //             ->where('campus', $this->userCampus)
+            //             ->get();
+            //     });
+            $reservations = Reservation::where('active', true)
+                ->whereHas('place.building', function ($query) {
+                    $query->where('city', $this->userCity)
+                        ->where('campus', $this->userCampus);
+                })
+                ->with('client', 'hours', 'dates', 'place.building')
+                ->get();
+
+        } else if ($this->statusFilter == 'ALL') {
+            $reservations = Reservation::where('active', true)
+            ->with('place', 'client', 'hours', 'dates')
+            ->get();
+        }
+        $this->reservations = $reservations;
+
         return view('livewire.reservations', [
             'reservations' => $this->reservations,
         ]);

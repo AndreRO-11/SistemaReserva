@@ -15,19 +15,15 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
-
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
         $this->truncateTables([
             'hours',
             'details',
-            'users'
+            'campuses',
+            'users',
         ]);
         $this->call(HourSeeder::class);
         $this->call(DetailSeeder::class);
+        $this->call(CampusSeeder::class);
         $this->call(UserSeeder::class);
     }
 
