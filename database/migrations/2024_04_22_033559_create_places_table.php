@@ -22,6 +22,7 @@ return new class extends Migration
             $table->foreignId('type_id')->references('id')->on('types');
             $table->foreignId('building_id')->references('id')->on('buildings');
             $table->foreignId('seat_id')->references('id')->on('seats');
+            $table->foreignId('user_id')->references('id')->on('users');
 
             $table->timestamps();
 

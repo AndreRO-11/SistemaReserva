@@ -3,6 +3,7 @@
 use App\Http\Controllers\ReportsController;
 use App\Livewire\Admin\Reports;
 use App\Livewire\Buildings;
+use App\Livewire\Campuses;
 use App\Livewire\Login;
 use App\Livewire\Places;
 use App\Livewire\Reservations;
@@ -36,6 +37,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/users', Users::class);
 
     Route::get('/buildings', Buildings::class);
+    Route::get('/campus', Campuses::class);
     Route::get('/seats', Seats::class);
     Route::get('/types', Types::class);
     Route::get('/services', Services::class);

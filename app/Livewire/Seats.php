@@ -9,19 +9,29 @@ use Livewire\Component;
 class Seats extends Component
 {
     public $editSeat = null;
-    public $seats;
+    public $seats, $seatEdit;
 
-    #[Validate('required')]
     public $seat;
 
     public function store()
     {
-        $this->validate();
-        Seat::create([
-            'seat' => $this->seat
+        $this->validate([
+            'seat' => 'required',
         ]);
 
-        $this->reset();
+        $seatExists = Seat::where('seat', $this->seat)->exists();
+
+        if (!$seatExists) {
+            $seat = strtoupper(preg_replace('/[^a-zA-Z0-9ñÑ\s]/', '', str_replace(['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ'], ['A', 'E', 'I', 'O', 'U', 'A', 'E', 'I', 'O', 'U', 'Ñ'], $this->seat)));
+
+            $seatStore = new Seat();
+            $seatStore->seat = $seat;
+            $seatStore->save();
+
+            $this->reset();
+        } else {
+            $this->addError('seat', 'Asiento ya existe.');
+        }
     }
 
     public function edit($id)
@@ -29,17 +39,30 @@ class Seats extends Component
         $this->editSeat = $id;
         $seat = Seat::find($id);
 
-        $this->seat = $seat->seat;
+        $this->seatEdit = $seat->seat;
     }
 
     public function update()
     {
-        $this->validate();
-        Seat::find($this->editSeat)->update([
-            'seat' => $this->seat,
+        $this->validate([
+            'seatEdit' => 'required'
         ]);
-        $this->reset();
-        $this->editSeat = null;
+
+        $id = $this->editSeat;
+        $seat = strtoupper(preg_replace('/[^a-zA-Z0-9ñÑ\s]/', '', str_replace(['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ'], ['A', 'E', 'I', 'O', 'U', 'A', 'E', 'I', 'O', 'U', 'Ñ'], $this->seatEdit)));
+
+        $seatExists = Seat::where('seat' ,$this->seatEdit)->exists();
+
+        if (!$seatExists) {
+            $seatUpdate = Seat::find($id);
+            $seatUpdate->seat = $seat;
+            $seatUpdate->save();
+
+            $this->reset();
+            $this->editSeat = null;
+        } else {
+            $this->addError('seatEdit', 'Asiento ya existe.');
+        }
     }
 
     public function close()
@@ -51,9 +74,16 @@ class Seats extends Component
     public function delete($id)
     {
         $seat = Seat::find($id);
-        $seat->delete();
+        $seat->active = false;
+        $seat->save();
     }
 
+    public function setActive($id)
+    {
+        $seat = Seat::find($id);
+        $seat->active = true;
+        $seat->save();
+    }
 
     public function render()
     {

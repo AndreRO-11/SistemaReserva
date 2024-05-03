@@ -2,6 +2,8 @@
     <div class="container mt-3">
 
         <div class="opciones_boton mb-3">
+            <button wire:click="filterByStatus('ALL')" class="btn btn-primary" data-bs-toggle="button">TODAS LAS
+                RESERVAS</button>
             <button wire:click="filterByStatus('PENDIENTE')" class="btn btn-secondary"
                 data-bs-toggle="button">PENDIENTE</button>
             <button wire:click="filterByStatus('APROBADO')" class="btn btn-success"
@@ -10,69 +12,78 @@
                 data-bs-toggle="button">RECHAZADO</button>
         </div>
 
-        <div class="table-responsive">
-            <table class="table table-sm table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th scope="col">Fecha</th>
-                        <th scope="col" class="text-center">Hora Inicio - Término</th>
-                        <th scope="col">Espacio</th>
-                        <th scope="col">Reservado por</th>
-                        <th scope="col">Actividad</th>
-                        <th scope="col" class="text-center">Asistentes</th>
-                        <th scope="col" class="text-center">Estado</th>
-                        <th scope="col" class="text-center">Opciones</th>
-                    </tr>
-                </thead>
-                <tbody class="table-group-divider">
-                    @foreach ($reservations as $reservation)
-                        @if (!$statusFilter || $reservation->status->value === $statusFilter)
-                            <tr>
-                                <td>{{ $reservation->dates->first()->date ?? '' }}</td>
-                                <td class="text-center">
-                                    @if ($reservation->hours->isNotEmpty())
-                                        {{ \Carbon\Carbon::parse($reservation->hours->min('hour'))->format('H:i') }}
-                                         -
-                                        {{ \Carbon\Carbon::parse($reservation->hours->max('hour'))->addMinutes(40)->format('H:i') }}
-                                    @endif
-                                </td>
-                                <td>{{ $reservation->place->code }} - {{ $reservation->place->building->building }},
-                                    {{ $reservation->place->building->campus }}</td>
-                                <td>{{ $reservation->client->name }}</td>
-                                <td>{{ $reservation->activity }}</td>
-                                <td class="text-center">{{ $reservation->assistants }}</td>
-                                <td class="text-center">
-                                    @switch($reservation->status->value)
-                                        @case('APROBADO')
-                                            <h5><span class="badge bg-success">{{ $reservation->status }}</span></h5>
+        @if (!$reservations)
+            <div class="mx-auto">
+                <h5>No existen reservaciones.</h5>
+            </div>
+        @else
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th scope="col">Fecha</th>
+                            <th scope="col" class="text-center">Hora Inicio - Término</th>
+                            <th scope="col">Espacio</th>
+                            <th scope="col">Reservado por</th>
+                            <th scope="col">Actividad</th>
+                            <th scope="col" class="text-center">Asistentes</th>
+                            <th scope="col" class="text-center">Estado</th>
+                            <th scope="col" class="text-center">Opciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        @foreach ($reservations as $reservation)
+                            @if (!$statusFilter || $reservation->status->value === $statusFilter)
+                                <tr>
+                                    <td>{{ $reservation->dates->first()->date ?? '' }}</td>
+                                    <td class="text-center">
+                                        @if ($reservation->hours->isNotEmpty())
+                                            {{ \Carbon\Carbon::parse($reservation->hours->min('hour'))->format('H:i') }}
+                                            -
+                                            {{ \Carbon\Carbon::parse($reservation->hours->max('hour'))->addMinutes(40)->format('H:i') }}
+                                        @endif
+                                    </td>
+                                    <td>{{ $reservation->place->code }} - {{ $reservation->place->building->building }},
+                                        {{ $reservation->place->building->campus }}</td>
+                                    <td>{{ $reservation->client->name }}</td>
+                                    <td>{{ $reservation->activity }}</td>
+                                    <td class="text-center">{{ $reservation->assistants }}</td>
+                                    <td class="text-center">
+                                        @switch($reservation->status->value)
+                                            @case('APROBADO')
+                                                <h5><span class="badge bg-success">{{ $reservation->status }}</span></h5>
                                             @break
 
-                                        @case('RECHAZADO')
-                                            <h5><span class="badge bg-danger">{{ $reservation->status }}</span></h5>
+                                            @case('RECHAZADO')
+                                                <h5><span class="badge bg-danger">{{ $reservation->status }}</span></h5>
                                             @break
 
-                                        @default
-                                            <h5><span class="badge bg-secondary">{{ $reservation->status }}</span></h5>
-                                    @endswitch
-                                </td>
-                                <td>
-                                    <div class="opciones_boton">
-                                        <button wire:click="show({{ $reservation->id }})" class="btn btn-primary"
-                                            data-bs-toggle="modal" data-bs-target="#reservationModal"><i
-                                                class="bi bi-eye"></i></button>
-                                        <button wire:click="edit({{ $reservation->id }})" class="btn btn-primary"><i
-                                                class="bi bi-pencil-square" data-bs-toggle="modal"
-                                                data-bs-target="#reservationEditModal"></i></button>
-                                        <button wire:click="delete({{ $reservation->id }})" class="btn btn-danger"><i
-                                                class="bi bi-trash3"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endif
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                                            @default
+                                                <h5><span class="badge bg-secondary">{{ $reservation->status }}</span></h5>
+                                        @endswitch
+                                    </td>
+                                    <td>
+                                        <div class="opciones_boton">
+                                            <button wire:click="show({{ $reservation->id }})" class="btn btn-primary"
+                                                data-bs-toggle="modal" data-bs-target="#reservationModal"><i
+                                                    class="bi bi-eye"></i></button>
+                                            <button wire:click="edit({{ $reservation->id }})"
+                                                class="btn btn-warning"><i class="bi bi-pencil-square text-dark"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#reservationEditModal"></i></button>
+                                            <button wire:click="delete({{ $reservation->id }})"
+                                                class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endif
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+
+
 
         <div wire:ignore.self class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="reservationModal"
             aria-hidden="true">
@@ -125,7 +136,7 @@
                                         </p>
                                     </div>
                                     <div class="mt-2">
-                                        <p>Observaciones: {!!nl2br ($reservationEdit['comment']) !!}</p>
+                                        <p>Observaciones: {!! nl2br($reservationEdit['comment']) !!}</p>
                                     </div>
                                     <div class="mt-2">
                                         <p>Servicios:</p>
@@ -231,12 +242,12 @@
                                     </div> --}}
                                     <div class="mt-2">
                                         <label class="form-label" for="reservationEdit.comment">Observaciones:</label>
-                                        <textarea wire:model="reservationEdit.comment" id="reservationEdit.comment" class="form-control"  rows="5"></textarea>
+                                        <textarea wire:model="reservationEdit.comment" id="reservationEdit.comment" class="form-control" rows="5"></textarea>
                                     </div>
                                     {{-- <div class="mt-2">
                                         <label class="form-label">Observaciones:</label>
                                         <textarea wire:model="comment" class="form-control" rows="5">
-                                            {{-- {!! $reservationEdit['comment'] !!} 
+                                            {{-- {!! $reservationEdit['comment'] !!}
                                         </textarea>
                                     </div> --}}
                                     <div class="mt-2 cols-sm-2 d-grid">
@@ -244,8 +255,12 @@
                                         <ul style="list-style-type: none;">
                                             @foreach ($allServices as $service)
                                                 <li>
-                                                    <label class="form-check-label" for="selectedServices{{ $service->id }}">
-                                                        <input wire:model="reservationEdit.selectedServices" id="selectedServices{{ $service->id }}" class="form-check-input" type="checkbox" value="{{ $service->id }}">
+                                                    <label class="form-check-label"
+                                                        for="selectedServices{{ $service->id }}">
+                                                        <input wire:model="reservationEdit.selectedServices"
+                                                            id="selectedServices{{ $service->id }}"
+                                                            class="form-check-input" type="checkbox"
+                                                            value="{{ $service->id }}">
                                                         {{ $service->service }}
                                                     </label>
                                                 </li>

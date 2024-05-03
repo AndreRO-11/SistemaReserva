@@ -22,7 +22,8 @@ class Reservation extends Model
         'active',
         'client_id',
         'email_id',
-        'place_id'
+        'place_id',
+        'user_id'
     ];
 
     protected $casts = [

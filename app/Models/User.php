@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -22,9 +23,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'campus',
         'city',
-        'active'
+        'active',
+        'campus_id'
     ];
 
     /**
@@ -47,13 +48,25 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = bcrypt($value);
+    }
+
+    public function campus() : BelongsTo
+    {
+        return $this->belongsTo(Campus::class);
     }
 
     public function reservations() : HasMany
     {
         return $this->hasMany(Reservation::class);
     }
+
+    public function places() : HasMany
+    {
+        return $this->hasMany(Place::class);
+    }
+
 }

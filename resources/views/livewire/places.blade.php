@@ -1,24 +1,37 @@
 <div>
 
-    <div class="container mt-3">
+    <div class="container">
 
-        <div class="opciones_boton mb-3 row row-cols-sm-1">
-            <div class="col-2 col-sm-2 my-auto text-end">
+        <div class="opciones_boton mb-3 row row-cols-1 row-cols-md-4 row-cols-lg-4">
+            <div class="col text-center pt-3">
                 <label for="selectedDates">
                     <h6>Fecha a buscar:</h6>
                 </label>
             </div>
-            <div class="col-2 col-sm-2">
+
+            <div class="col mt-2">
                 <input wire:model="selectedDates" wire:change="actualizarUnreservedPlaces" class="form-control"
                     type="date" id="selectedDates" required min="{{ \Carbon\Carbon::tomorrow()->toDateString() }}">
             </div>
+
+            @guest
+                <div class="col mt-2">
+                    <select wire:model="cityFilter" wire:change="actualizarUnreservedPlaces" class="form-select">
+                        <option value="null" selected>Filtrar por ciudad.</option>
+                        <option value="CHILLAN">CHILLAN</option>
+                        <option value="CONCEPCION">CONCEPCION</option>
+                    </select>
+                </div>
+            @endguest
+
             @auth
-                <div class="col-2 col-sm-2">
+                <div class="col opciones_boton mt-2">
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#placeModal">
                         Agregar Espacio
                     </button>
                 </div>
             @endauth
+
         </div>
 
         @if (!$unreservedPlaces)
@@ -30,7 +43,7 @@
                 @foreach ($unreservedPlaces as $place)
                     @if ($place->availableHours > 0)
                         <div class="col">
-                            <div class="card">
+                            <div class="card @if (!$place->active) border-danger text-bg-danger @endif">
                                 <div class="card-body">
                                     <h5 class="card-title text-center">{{ $place->code }} <span
                                             class="badge text-bg-info">{{ $place->capacity }}</span></h5>
@@ -39,8 +52,9 @@
                                             <p style="margin-top:0; margin-bottom:0;">Edificio
                                                 {{ $place->building->building }}, Piso
                                                 {{ $place->floor }}</p>
-                                            <p style="margin-top:0; margin-bottom:0;">{{ $place->building->campus }},
-                                                {{ $place->building->city }}</p>
+                                            <p style="margin-top:0; margin-bottom:0;">
+                                                {{ $place->building->campus->campus }},
+                                                {{ $place->building->campus->city }}</p>
                                         </div>
                                         <div class="m-1 text-center">
                                             @foreach ($place->details as $detail)
@@ -56,14 +70,23 @@
                                         </div>
                                     </div>
                                     <div class="mt-2 opciones_boton">
-                                        <button wire:click="book({{ $place->id }})" class="btn btn-success"
-                                            data-bs-toggle="modal" data-bs-target="#reservationModal">Reservar</button>
+                                        @if ($place->active)
+                                            <button wire:click="book({{ $place->id }})" class="btn btn-success"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#reservationModal">Reservar</button>
+                                        @endif
+
                                         @auth
-                                            <button wire:click="edit({{ $place->id }})" class="btn btn-primary"
+                                            <button wire:click="edit({{ $place->id }})" class="btn btn-warning"
                                                 data-bs-toggle="modal" data-bs-target="#placeModal"><i
-                                                    class="bi bi-pencil-square"></i></button>
-                                            <button wire:click="delete({{ $place->id }})" class="btn btn-danger"><i
-                                                    class="bi bi-trash3"></i></button>
+                                                    class="bi bi-pencil-square text-dark"></i></button>
+                                            @if ($place->active)
+                                                <button wire:click="delete({{ $place->id }})" class="btn btn-danger"><i
+                                                        class="bi bi-trash3"></i></button>
+                                            @else
+                                                <button wire:click="setActive({{ $place->id }})"
+                                                    class="btn btn-success"><i class="bi bi-check-lg"></i></button>
+                                            @endif
                                         @endauth
                                     </div>
                                 </div>
@@ -147,7 +170,8 @@
                                             @foreach ($buildings as $building)
                                                 <option value="{{ $building->id }}" required>
                                                     {{ $building->building }},
-                                                    {{ $building->campus }}, {{ $building->city }}</option>
+                                                    {{ $building->campus->campus }}, {{ $building->campus->city }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -209,7 +233,7 @@
                                     <div class="mt-2">
                                         <label class="form-label" for="reservationPlace.data">Espacio:</label>
                                         <input class="form-control" id="reservationPlace.data" type="text"
-                                            value="{{ $reservationPlace->code ?? '' }}, {{ $reservationPlace->building->building ?? '' }} - {{ $reservationPlace->building->campus ?? '' }}, {{ $reservationPlace->building->city ?? '' }}"
+                                            value="{{ $reservationPlace->code ?? '' }}, {{ $reservationPlace->building->building ?? '' }} - {{ $reservationPlace->building->campus->campus ?? '' }}, {{ $reservationPlace->building->campus->city ?? '' }}"
                                             disabled>
                                     </div>
                                     <div class="mt-2">

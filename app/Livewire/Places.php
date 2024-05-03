@@ -14,7 +14,8 @@ use App\Models\Reservation;
 use App\Models\Seat;
 use App\Models\Service;
 use App\Models\Type;
-use Carbon\Carbon;
+use App\Models\User;
+use Carbon\Carbon as Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -24,6 +25,7 @@ class Places extends Component
     public $editPlace = null, $dateFilter, $selectedDate, $reservationPlace, $localDate, $unreservedPlaces = [], $availableHours = [];
     public $places, $details, $buildings, $types, $seats, $services, $place;
     public $selectedDetails = [], $selectedServices = [], $selectedHours = [], $selectedDates, $availablePlaces, $allHours;
+    public $cityFilter = null, $campus;
 
     public $placeEdit = [
         'code' => '',
@@ -54,6 +56,7 @@ class Places extends Component
             'placeEdit.seat_id' => 'required',
             'placeEdit.building_id' => 'required',
         ]);
+
         $code = Str::upper($this->placeEdit['code']);
         $place = Place::create([
             'code' => $code,
@@ -61,10 +64,12 @@ class Places extends Component
             'floor' => $this->placeEdit['floor'],
             'type_id' => $this->placeEdit['type_id'],
             'seat_id' => $this->placeEdit['seat_id'],
-            'building_id' => $this->placeEdit['building_id']
+            'building_id' => $this->placeEdit['building_id'],
+            'user_id' => auth()->user()->id,
         ]);
         $place->details()->attach($this->selectedDetails);
         $this->reset();
+        $this->actualizarUnreservedPlaces();
     }
 
     public function edit($id)
@@ -78,6 +83,7 @@ class Places extends Component
         $this->placeEdit['seat_id'] = $place->seat_id;
         $this->placeEdit['building_id'] = $place->building_id;
         $this->selectedDetails = $place->details->pluck('id')->toArray();
+        $this->actualizarUnreservedPlaces();
     }
 
     public function update()
@@ -102,6 +108,7 @@ class Places extends Component
         ]);
         $place->details()->sync($this->selectedDetails);
         $this->reset();
+        $this->actualizarUnreservedPlaces();
     }
 
     public function delete($id)
@@ -110,6 +117,16 @@ class Places extends Component
         $place->update([
             'active' => false
         ]);
+        $this->actualizarUnreservedPlaces();
+    }
+
+    public function setActive($id)
+    {
+        $place = Place::find($id);
+        $place->update([
+            'active' => true
+        ]);
+        $this->actualizarUnreservedPlaces();
     }
 
     public function book($id)
@@ -122,6 +139,7 @@ class Places extends Component
         $place = Place::with('building', 'details')->find($id);
         $this->reservationPlace = $place;
         $this->availableHours = $this->getAvailableHours($id);
+        $this->actualizarUnreservedPlaces();
     }
 
     public function bookSave()
@@ -145,8 +163,7 @@ class Places extends Component
             $emailId = Email::create();
 
             $clientExists = Client::where('email', $this->reservationEdit['email'])->exists();
-            if($clientExists)
-            {
+            if ($clientExists) {
                 $clientId = Client::where('email', $this->reservationEdit['email'])->first();
             } else {
                 $clientId = Client::create([
@@ -163,11 +180,11 @@ class Places extends Component
                 'assistants' => $this->reservationEdit['assistants'],
                 'client_id' => $clientId->id,
                 'email_id' => $emailId->id,
-                'place_id' => $this->reservationPlace->id,
+                'place_id' => $this->reservationPlace->id
             ]);
 
             $selectedDatesArray = is_array($this->selectedDates) ? $this->selectedDates : [$this->selectedDates];
-            $this->availableHours = $this->getAvailableHours($this->editPlace, $selectedDatesArray);
+            $this->availableHours = $this->getAvailableHours($this->editPlace);
 
             $reservation->services()->attach($this->selectedServices);
 
@@ -186,10 +203,9 @@ class Places extends Component
             Mail::to($clientId->email)->send(new ReservationEmail($reservation->id));
 
             $this->reset();
-            $this->selectedDates = \Carbon\Carbon::tomorrow()->toDateString();
-            $this->dispatch('created');
+            $this->selectedDates = Carbon::tomorrow()->toDateString();
         }
-
+        $this->actualizarUnreservedPlaces();
     }
 
     public function getAvailableHours($placeId)
@@ -218,40 +234,112 @@ class Places extends Component
         return $formattedHours;
     }
 
-    public function mount()
-    {
-        $this->selectedDates = \Carbon\Carbon::tomorrow()->toDateString();
-        $this->actualizarUnreservedPlaces();
-    }
-
     public function actualizarUnreservedPlaces()
     {
-        $this->unreservedPlaces = Place::where('active', true)
-            ->with(['details', 'building', 'reservations.dates', 'reservations.hours'])
-            ->get();
+        // $this->unreservedPlaces = Place::where('active', true)
+        //     ->with(['details', 'building', 'reservations.dates', 'reservations.hours'])
+        //     ->get();
+        // foreach ($this->unreservedPlaces as $place) {
+        //     $availableHours = $this->getAvailableHours($place->id);
+        //     $place->availableHours = $availableHours->toArray();
+        // }
+
+        // $placesQuery = Place::where('active', true)
+        //     ->with(['details', 'building', 'reservations.dates', 'reservations.hours', 'building.campus']);
+
+        // if (auth()->check()) {
+        //     $user = auth()->user();
+        //     $user = User::with('campus')->first();
+        //     //dd($user);
+        //     $this->cityFilter = $user->campus->city;
+        //     $this->campus = $user->campus->campus;
+        //     $placesQuery->whereHas('building', function ($query) {
+        //         $query->where('city', $this->cityFilter)
+        //             ->where('campus', $this->campus);
+        //     });
+        // } else {
+        //     if ($this->cityFilter === 'CHILLAN' || $this->cityFilter === 'CONCEPCION') {
+        //         $placesQuery->whereHas('building', function ($query) {
+        //             $query->where('city', $this->cityFilter);
+        //         });
+        //     } else {
+        //         $this->cityFilter = null;
+        //     }
+        // }
+
+
+        // $placesQuery = Place::where('active', true)
+        //     ->with(['details', 'building', 'reservations.dates', 'reservations.hours']);
+
+        if (auth()->check()) {
+            $placesQuery = Place::with(['details', 'building', 'reservations.dates', 'reservations.hours']);
+            $user = auth()->user();
+            $user = User::find($user->id);
+            $this->cityFilter = $user->campus->city;
+            $this->campus = $user->campus->campus;
+            // $placesQuery->whereHas('building.campus', function ($query) {
+            //     $query->where('city', $this->cityFilter)
+            //         ->where('campus', $this->campus);
+            // });
+            $placesQuery->whereHas('building', function ($query) {
+                $query->whereHas('campus', function ($subQuery) {
+                    $subQuery->where('city', $this->cityFilter)
+                        ->where('campus', $this->campus);
+                });
+            });
+        } else {
+            $placesQuery = Place::where('active', true)
+                ->with(['details', 'building', 'reservations.dates', 'reservations.hours']);
+            if ($this->cityFilter === 'CHILLAN' || $this->cityFilter === 'CONCEPCION') {
+                $placesQuery->whereHas('building', function ($query) {
+                    $query->where('city', $this->cityFilter);
+                });
+            } else {
+                $this->cityFilter = null;
+            }
+        }
+
+
+        $this->unreservedPlaces = $placesQuery->get();
+
         foreach ($this->unreservedPlaces as $place) {
             $availableHours = $this->getAvailableHours($place->id);
             $place->availableHours = $availableHours->toArray();
         }
     }
 
+    public function mount()
+    {
+        $this->selectedDates = Carbon::tomorrow()->toDateString();
+        $this->actualizarUnreservedPlaces();
+    }
+
     public function render()
     {
-        $this->buildings = Building::where('active', true)->get();
+        if (auth()->check()) {
+            $user = User::with('campus')->first();
+            $this->cityFilter = $user->campus->city;
+            $this->campus = $user->campus->campus;
+            // $this->buildings = Building::where('active', true)
+            //     ->whereHas('campus', function ($query) {
+            //         $query->where('city', $this->cityFilter)
+            //             ->where('campus', $this->campus)
+            //             ->get();
+            //     });
+
+            $this->buildings = Building::whereHas('campus', function ($query) {
+                $query->where('city', $this->cityFilter)
+                    ->where('campus', $this->campus);
+            })//->where('active', true)
+                ->get();
+        } else {
+            $this->buildings = Building::where('active', true)->get();
+        }
+
         $this->types = Type::all();
         $this->seats = Seat::all();
         $this->details = Detail::all();
         $this->services = Service::where('active', true)->get();
-
-        $this->actualizarUnreservedPlaces();
-
-        // $this->unreservedPlaces = Place::with(['details', 'building', 'reservations.dates', 'reservations.hours'])
-        // ->whereDoesntHave('reservations', function ($query) {
-        //     $query->whereHas('dates', function ($subquery) {
-        //         $subquery->where('date', $this->selectedDates);
-        //     });
-        // })
-        // ->get();
 
         return view('livewire.places', [
             'places' => $this->unreservedPlaces,

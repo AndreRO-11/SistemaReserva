@@ -21,8 +21,7 @@ class UserSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@admin.com',
             'password' => Hash::make('admin'),
-            'campus' => 'FERNANDO MAY',
-            'city' => 'CHILLAN',
+            'campus_id' => 1,
             'remember_token' => $token
         ]);
     }
