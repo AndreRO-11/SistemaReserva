@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Mail\ReservationEmail;
 use App\Models\Building;
+use App\Models\Campus;
 use App\Models\Client;
 use App\Models\Date;
 use App\Models\Detail;
@@ -16,24 +17,57 @@ use App\Models\Service;
 use App\Models\Type;
 use App\Models\User;
 use Carbon\Carbon as Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Livewire\Component;
 
 class Places extends Component
 {
     public $editPlace = null, $dateFilter, $selectedDate, $reservationPlace, $localDate, $unreservedPlaces = [], $availableHours = [];
-    public $places, $details, $buildings, $types, $seats, $services, $place;
+    public $places, $details, $buildings, $types, $seats, $services;
     public $selectedDetails = [], $selectedServices = [], $selectedHours = [], $selectedDates, $availablePlaces, $allHours;
-    public $cityFilter = null, $campus;
+    public $cityFilter = null, $campus, $cities;
+
+    public $addPlace = false, $updatePlace = false, $bookPlace = false;
+
+    public $place = [
+        'code' => '',
+        'capacity' => '',
+        'floor' => '',
+        'type_id' => '',
+        'building_id' => '',
+        'seat_id' => '',
+        'user_id' => ''
+    ];
 
     public $placeEdit = [
         'code' => '',
         'capacity' => '',
         'floor' => '',
         'type_id' => '',
+        'building_id' => '',
         'seat_id' => '',
-        'building_id' => ''
+        'user_id' => ''
+    ];
+
+    public $placeReservation = [
+        'code' => '',
+        'capacity' => '',
+        'floor' => '',
+        'type_id' => '',
+        'building_id' => '',
+        'seat_id' => '',
+        'user_id' => ''
+    ];
+
+    public $reservation = [
+        'name' => '',
+        'email' => '',
+        'userType' => '',
+        'activity' => '',
+        'assistants' => '',
+        'associated_project' => '',
+        'comment' => '',
     ];
 
     public $reservationEdit = [
@@ -49,163 +83,195 @@ class Places extends Component
     public function store()
     {
         $this->validate([
-            'placeEdit.code' => 'required',
-            'placeEdit.capacity' => 'required',
-            'placeEdit.floor' => 'required',
-            'placeEdit.type_id' => 'required',
-            'placeEdit.seat_id' => 'required',
-            'placeEdit.building_id' => 'required',
+            'place.code' => 'required',
+            'place.capacity' => 'required',
+            'place.floor' => 'required',
+            'place.type_id' => 'required',
+            'place.seat_id' => 'required',
+            'place.building_id' => 'required',
         ]);
 
-        $code = Str::upper($this->placeEdit['code']);
-        $place = Place::create([
-            'code' => $code,
-            'capacity' => $this->placeEdit['capacity'],
-            'floor' => $this->placeEdit['floor'],
-            'type_id' => $this->placeEdit['type_id'],
-            'seat_id' => $this->placeEdit['seat_id'],
-            'building_id' => $this->placeEdit['building_id'],
-            'user_id' => auth()->user()->id,
-        ]);
-        $place->details()->attach($this->selectedDetails);
-        $this->reset();
-        $this->actualizarUnreservedPlaces();
+        $code = strtoupper(preg_replace('/[^a-zA-Z0-9ñÑ\s]/', '', str_replace(['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ'], ['A', 'E', 'I', 'O', 'U', 'A', 'E', 'I', 'O', 'U', 'Ñ'], $this->place['code'])));
+        $user = Auth::user();
+
+        $placeExists = Place::where('code', $code)
+            ->where('building_id', $this->place['building_id'])
+            ->exists();
+
+        if (!$placeExists) {
+            $placeStore = new Place();
+            $placeStore->code = $code;
+            $placeStore->capacity = $this->place['capacity'];
+            $placeStore->floor = $this->place['floor'];
+            $placeStore->type_id = $this->place['type_id'];
+            $placeStore->seat_id = $this->place['seat_id'];
+            $placeStore->building_id = $this->place['building_id'];
+            $placeStore->user_id = $user->id;
+            $placeStore->save();
+            $placeStore->details()->attach($this->selectedDetails);
+
+            $this->reset();
+            $this->addPlace = false;
+            $this->mount();
+        } else {
+            $this->addError('place.code', 'Espacio existente.');
+        }
     }
 
     public function edit($id)
     {
         $this->editPlace = $id;
+        $this->updatePlace = true;
         $place = Place::find($id);
-        $this->placeEdit['code'] = $place->code;
-        $this->placeEdit['capacity'] = $place->capacity;
-        $this->placeEdit['floor'] = $place->floor;
-        $this->placeEdit['type_id'] = $place->type_id;
-        $this->placeEdit['seat_id'] = $place->seat_id;
-        $this->placeEdit['building_id'] = $place->building_id;
+
+        $this->place['code'] = $place->code;
+        $this->place['capacity'] = $place->capacity;
+        $this->place['floor'] = $place->floor;
+        $this->place['type_id'] = $place->type_id;
+        $this->place['seat_id'] = $place->seat_id;
+        $this->place['building_id'] = $place->building_id;
         $this->selectedDetails = $place->details->pluck('id')->toArray();
-        $this->actualizarUnreservedPlaces();
     }
 
     public function update()
     {
         $this->validate([
-            'placeEdit.code' => 'required',
-            'placeEdit.capacity' => 'required',
-            'placeEdit.floor' => 'required',
-            'placeEdit.type_id' => 'required',
-            'placeEdit.seat_id' => 'required',
-            'placeEdit.building_id' => 'required',
+            'place.code' => 'required',
+            'place.capacity' => 'required',
+            'place.floor' => 'required',
+            'place.type_id' => 'required',
+            'place.seat_id' => 'required',
+            'place.building_id' => 'required',
         ]);
-        $place = Place::find($this->editPlace);
-        $code = Str::upper($this->placeEdit['code']);
-        $place->update([
-            'code' => $code,
-            'capacity' => $this->placeEdit['capacity'],
-            'floor' => $this->placeEdit['floor'],
-            'type_id' => $this->placeEdit['type_id'],
-            'seat_id' => $this->placeEdit['seat_id'],
-            'building_id' => $this->placeEdit['building_id']
-        ]);
-        $place->details()->sync($this->selectedDetails);
+
+        $id = $this->editPlace;
+
+        $user = Auth::user();
+
+        $placeUpdate = Place::find($id);
+        $placeUpdate->capacity = $this->place['capacity'];
+        $placeUpdate->floor = $this->place['floor'];
+        $placeUpdate->type_id = $this->place['type_id'];
+        $placeUpdate->seat_id = $this->place['seat_id'];
+        $placeUpdate->building_id = $this->place['building_id'];
+        $placeUpdate->user_id = $user->id;
+        $placeUpdate->details()->sync($this->selectedDetails);
+        $placeUpdate->save();
+
         $this->reset();
-        $this->actualizarUnreservedPlaces();
+        $this->mount();
     }
 
     public function delete($id)
     {
         $place = Place::find($id);
-        $place->update([
-            'active' => false
-        ]);
-        $this->actualizarUnreservedPlaces();
+        $place->active = false;
+        $place->save();
+
+        $this->mount();
     }
 
     public function setActive($id)
     {
         $place = Place::find($id);
-        $place->update([
-            'active' => true
-        ]);
-        $this->actualizarUnreservedPlaces();
+        $place->active = true;
+        $place->save();
+
+        $this->mount();
+    }
+
+    public function close()
+    {
+        $this->addPlace = false;
+        $this->updatePlace = false;
+        $this->bookPlace = false;
+        $this->editPlace = null;
+
+        $this->reset();
+        $this->mount();
     }
 
     public function book($id)
     {
         $this->validate([
-            'selectedDates' => 'required|date|after_or_equal:tomorrow',
+            'selectedDates' => 'required|date|after_or_equal:tomorrow'
         ]);
 
+
         $this->editPlace = $id;
+        $this->bookPlace = true;
+
         $place = Place::with('building', 'details')->find($id);
-        $this->reservationPlace = $place;
+
+        $this->placeReservation = $place;
         $this->availableHours = $this->getAvailableHours($id);
-        $this->actualizarUnreservedPlaces();
     }
 
     public function bookSave()
     {
         $this->validate([
-            'reservationEdit.name' => 'required',
-            'reservationEdit.email' => 'required|email|ends_with:@ubiobio.cl,.ubiobio.cl',
-            'reservationEdit.userType' => 'required',
-            'reservationEdit.activity' => 'required',
-            'reservationEdit.assistants' => 'required|numeric|min:1',
+            'reservation.name' => 'required',
+            'reservation.email' => 'required|email|ends_with:@ubiobio.cl,.ubiobio.cl',
+            'reservation.userType' => 'required',
+            'reservation.activity' => 'required',
+            'reservation.assistants' => 'required|numeric|min:1',
             'selectedDates' => 'required|date|after_or_equal:tomorrow',
             'selectedHours' => 'required|array',
         ]);
 
         $this->place = Place::where('id', $this->editPlace)->first();
-        $placeAssistants = $this->reservationEdit['assistants'];
+        $placeAssistants = $this->reservation['assistants'];
 
         if ($placeAssistants > $this->place->capacity) {
             $this->addError('assistants', 'La cantidad de asistentes excede la capacidad del lugar.');
         } else {
             $emailId = Email::create();
 
-            $clientExists = Client::where('email', $this->reservationEdit['email'])->exists();
+            $clientExists = Client::where('email', $this->reservation['email'])->exists();
             if ($clientExists) {
-                $clientId = Client::where('email', $this->reservationEdit['email'])->first();
+                $clientId = Client::where('email', $this->reservation['email'])->first();
             } else {
                 $clientId = Client::create([
-                    'name' => $this->reservationEdit['name'],
-                    'email' => $this->reservationEdit['email'],
-                    'user_type' => $this->reservationEdit['userType']
+                    'name' => $this->reservation['name'],
+                    'email' => $this->reservation['email'],
+                    'user_type' => $this->reservation['userType']
                 ]);
             }
 
-            $reservation = Reservation::create([
-                'comment' => $this->reservationEdit['comment'],
-                'activity' => $this->reservationEdit['activity'],
-                'associated_project' => $this->reservationEdit['associated_project'],
-                'assistants' => $this->reservationEdit['assistants'],
-                'client_id' => $clientId->id,
-                'email_id' => $emailId->id,
-                'place_id' => $this->reservationPlace->id
-            ]);
+            $reservationBook = new Reservation();
+            $reservationBook->comment = $this->reservation['comment'];
+            $reservationBook->activity = $this->reservation['activity'];
+            $reservationBook->associated_project = $this->reservation['associated_project'];
+            $reservationBook->assistants = $this->reservation['assistants'];
+            $reservationBook->client_id = $clientId->id;
+            $reservationBook->email_id = $emailId->id;
+            $reservationBook->place_id = $this->place->id;
+            $reservationBook->save();
 
             $selectedDatesArray = is_array($this->selectedDates) ? $this->selectedDates : [$this->selectedDates];
             $this->availableHours = $this->getAvailableHours($this->editPlace);
 
-            $reservation->services()->attach($this->selectedServices);
+            $reservationBook->services()->attach($this->selectedServices);
 
             if (!is_array($this->selectedDates)) {
                 $this->selectedDates = [$this->selectedDates];
             }
             foreach ($this->selectedDates as $selectedDate) {
                 $date = Date::firstOrCreate(['date' => $selectedDate]);
-                $reservation->dates()->attach($date->id);
+                $reservationBook->dates()->attach($date->id);
             }
-            $reservation->hours()->attach($this->selectedHours);
+            $reservationBook->hours()->attach($this->selectedHours);
             $this->selectedDates = [];
             $this->selectedHours = [];
 
             // Email
-            Mail::to($clientId->email)->send(new ReservationEmail($reservation->id));
+            Mail::to($clientId->email)->send(new ReservationEmail($reservationBook->id));
 
             $this->reset();
             $this->selectedDates = Carbon::tomorrow()->toDateString();
         }
-        $this->actualizarUnreservedPlaces();
+
+        $this->mount();
     }
 
     public function getAvailableHours($placeId)
@@ -236,51 +302,13 @@ class Places extends Component
 
     public function actualizarUnreservedPlaces()
     {
-        // $this->unreservedPlaces = Place::where('active', true)
-        //     ->with(['details', 'building', 'reservations.dates', 'reservations.hours'])
-        //     ->get();
-        // foreach ($this->unreservedPlaces as $place) {
-        //     $availableHours = $this->getAvailableHours($place->id);
-        //     $place->availableHours = $availableHours->toArray();
-        // }
-
-        // $placesQuery = Place::where('active', true)
-        //     ->with(['details', 'building', 'reservations.dates', 'reservations.hours', 'building.campus']);
-
-        // if (auth()->check()) {
-        //     $user = auth()->user();
-        //     $user = User::with('campus')->first();
-        //     //dd($user);
-        //     $this->cityFilter = $user->campus->city;
-        //     $this->campus = $user->campus->campus;
-        //     $placesQuery->whereHas('building', function ($query) {
-        //         $query->where('city', $this->cityFilter)
-        //             ->where('campus', $this->campus);
-        //     });
-        // } else {
-        //     if ($this->cityFilter === 'CHILLAN' || $this->cityFilter === 'CONCEPCION') {
-        //         $placesQuery->whereHas('building', function ($query) {
-        //             $query->where('city', $this->cityFilter);
-        //         });
-        //     } else {
-        //         $this->cityFilter = null;
-        //     }
-        // }
-
-
-        // $placesQuery = Place::where('active', true)
-        //     ->with(['details', 'building', 'reservations.dates', 'reservations.hours']);
-
         if (auth()->check()) {
             $placesQuery = Place::with(['details', 'building', 'reservations.dates', 'reservations.hours']);
             $user = auth()->user();
             $user = User::find($user->id);
             $this->cityFilter = $user->campus->city;
             $this->campus = $user->campus->campus;
-            // $placesQuery->whereHas('building.campus', function ($query) {
-            //     $query->where('city', $this->cityFilter)
-            //         ->where('campus', $this->campus);
-            // });
+
             $placesQuery->whereHas('building', function ($query) {
                 $query->whereHas('campus', function ($subQuery) {
                     $subQuery->where('city', $this->cityFilter)
@@ -290,15 +318,14 @@ class Places extends Component
         } else {
             $placesQuery = Place::where('active', true)
                 ->with(['details', 'building', 'reservations.dates', 'reservations.hours']);
-            if ($this->cityFilter === 'CHILLAN' || $this->cityFilter === 'CONCEPCION') {
-                $placesQuery->whereHas('building', function ($query) {
+            if (!empty($this->cityFilter)) {
+                $placesQuery->whereHas('building.campus', function ($query) {
                     $query->where('city', $this->cityFilter);
                 });
             } else {
                 $this->cityFilter = null;
             }
         }
-
 
         $this->unreservedPlaces = $placesQuery->get();
 
@@ -317,22 +344,18 @@ class Places extends Component
     public function render()
     {
         if (auth()->check()) {
-            $user = User::with('campus')->first();
+            // VISTA PARA USUARIOS
+            $user = Auth::user();
+            $user = User::find($user->id);
             $this->cityFilter = $user->campus->city;
             $this->campus = $user->campus->campus;
-            // $this->buildings = Building::where('active', true)
-            //     ->whereHas('campus', function ($query) {
-            //         $query->where('city', $this->cityFilter)
-            //             ->where('campus', $this->campus)
-            //             ->get();
-            //     });
 
             $this->buildings = Building::whereHas('campus', function ($query) {
                 $query->where('city', $this->cityFilter)
                     ->where('campus', $this->campus);
-            })//->where('active', true)
-                ->get();
+            })->get();
         } else {
+            // VISTA PARA VISITAS
             $this->buildings = Building::where('active', true)->get();
         }
 
@@ -340,6 +363,7 @@ class Places extends Component
         $this->seats = Seat::all();
         $this->details = Detail::all();
         $this->services = Service::where('active', true)->get();
+        $this->cities = Campus::select('city')->distinct()->pluck('city');
 
         return view('livewire.places', [
             'places' => $this->unreservedPlaces,
@@ -349,6 +373,7 @@ class Places extends Component
             'seats' => $this->seats,
             'services' => $this->services,
             'reservationPlace' => $this->reservationPlace,
+            'cities' => $this->cities
         ]);
     }
 }

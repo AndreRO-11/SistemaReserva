@@ -5,12 +5,13 @@ namespace App\Livewire;
 use App\Models\Building;
 use App\Models\Campus;
 use Livewire\Component;
+use Illuminate\Support\Facades\Auth;
 
 class Buildings extends Component
 {
     public $editBuilding = null;
     public $buildings, $campus_id;
-    public $campuses;
+    public $campus, $user;
 
     public $buildingStore = [
         'building' => '',
@@ -26,17 +27,17 @@ class Buildings extends Component
     {
         $this->validate(([
             'buildingStore.building' => 'required',
-            'buildingStore.campus_id' => 'required',
+            //'buildingStore.campus_id' => 'required',
         ]));
 
-        $building = Building::where('campus_id', $this->buildingStore['campus_id'])->where('building', $this->buildingStore['building'])->exists();
+        $building = Building::where('campus_id', $this->user->campus_id)->where('building', $this->buildingStore['building'])->exists();
 
         if (!$building) {
             $building = strtoupper(preg_replace('/[^a-zA-Z0-9ñÑ\s]/', '', str_replace(['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ'], ['A', 'E', 'I', 'O', 'U', 'A', 'E', 'I', 'O', 'U', 'Ñ'], $this->buildingStore['building'])));
 
             $buildingStore = new Building();
             $buildingStore->building = $building;
-            $buildingStore->campus_id = $this->buildingStore['campus_id'];
+            $buildingStore->campus_id = $this->user->campus_id;
             $buildingStore->save();
 
             $this->reset();
@@ -61,7 +62,7 @@ class Buildings extends Component
             'buildingEdit.campus_id' => 'required',
         ]));
 
-        $building = Building::where('campus_id', $this->buildingEdit['campus_id'])->where('building', $this->buildingEdit['building'])->get();
+        $building = Building::where('campus_id', $this->user->campus_id)->where('building', $this->buildingStore['building'])->exists();
 
         if (!$building) {
             $id = $this->editBuilding;
@@ -69,7 +70,7 @@ class Buildings extends Component
 
             $buildingUpdate = Building::find($id);
             $buildingUpdate->building = $building;
-            $buildingUpdate->campus_id = $this->buildingEdit['campus_id'];
+            $buildingUpdate->campus_id = $this->user->campus_id;
             $buildingUpdate->save();
 
             $this->reset();
@@ -101,12 +102,14 @@ class Buildings extends Component
 
     public function render()
     {
-        $this->buildings = Building::all();
-        $this->campuses = Campus::all();
+        $this->user = Auth::user();
+
+        $this->buildings = Building::where('campus_id', $this->user->campus_id)->get();
+        $this->campus = Campus::where('id', $this->user->campus_id)->first();
 
         return view('livewire.buildings', [
             'buildings' => $this->buildings,
-            'campuses' => $this->campuses,
+            'campus' => $this->campus,
         ]);
     }
 }

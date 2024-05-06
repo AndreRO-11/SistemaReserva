@@ -29,7 +29,9 @@ class Campuses extends Component
             'campus.city'=> 'required'
         ]);
 
-        $campusExists = Campus::where('campus', $this->campus['campus'])->exists();
+        $campusExists = Campus::where('campus', $this->campus['campus'])
+            ->where('city', $this->campus['city'])
+            ->exists();
 
         if (!$campusExists) {
             $campus = strtoupper(preg_replace('/[^a-zA-Z0-9ñÑ\s]/', '', str_replace(['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ'], ['A', 'E', 'I', 'O', 'U', 'A', 'E', 'I', 'O', 'U', 'Ñ'], $this->campus['campus'])));
@@ -66,9 +68,11 @@ class Campuses extends Component
             'campusEdit.city'=> 'required'
         ]);
 
-        $campusExists = Campus::where('campus', $this->campusEdit['campus'])->exists();
+        $campusExists = Campus::where('campus', $this->campusEdit['campus'])
+            ->where('city', $this->campusEdit['city'])
+            ->exists();
 
-        if ($campusExists) {
+        if (!$campusExists) {
             $id = $this->editCampus;
 
             $campus = strtoupper(preg_replace('/[^a-zA-Z0-9ñÑ\s]/', '', str_replace(['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ'], ['A', 'E', 'I', 'O', 'U', 'A', 'E', 'I', 'O', 'U', 'Ñ'], $this->campusEdit['campus'])));
