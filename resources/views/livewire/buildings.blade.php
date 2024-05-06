@@ -12,14 +12,7 @@
                     @enderror
                 </div>
                 <div class="col">
-                    <select wire:model='buildingStore.campus_id'
-                        class="form-select @error('buildingStore.campus_id') is-invalid @enderror" required>
-                        <option value="">Campus</option>
-                        @foreach ($campuses as $campus)
-                            <option value="{{ $campus->id }}">{{ $campus->campus }},
-                                {{ $campus->city }}</option>
-                        @endforeach
-                    </select>
+                    <input wire:model="buildingStore.campus_id" type="text" class="form-control" placeholder="{{ $campus->campus }}" disabled>
                 </div>
                 <div class="col opciones_boton">
                     <button class="btn btn-primary">Añadir</button>
@@ -62,14 +55,7 @@
                                         @enderror
                                     </td>
                                     <td>
-                                        <select wire:model='buildingEdit.campus_id'
-                                            class="form-select @error('buildingEdit.campus_id') is-invalid @enderror"
-                                            required>
-                                            @foreach ($campuses as $campus)
-                                                <option value="{{ $campus->id }}">{{ $campus->campus }},
-                                                    {{ $campus->city }}</option>
-                                            @endforeach
-                                        </select>
+                                        <input type="text" class="form-control" value="{{ $campus->campus }}" disabled>
                                     </td>
                                 @endif
                                 <td>

@@ -10,11 +10,12 @@ class Services extends Component
 {
     public $editService = null;
     public $services;
-    public $confirmation = false;
 
-    #[Validate([
-        'serviceEdit.service' => 'required'
-    ])]
+    public $service = [
+        'service' => '',
+        'description' => ''
+    ];
+
     public $serviceEdit = [
         'service' => '',
         'description' => ''
@@ -22,13 +23,22 @@ class Services extends Component
 
     public function store()
     {
-        $this->validate();
-        Service::create([
-            'service' => $this->serviceEdit['service'],
-            'description' => $this->serviceEdit['description'],
-            'active' => true
+        $this->validate([
+            'service.service' => 'required',
         ]);
-        $this->reset();
+
+        $serviceExists = Service::where('service', $this->service['service'])->exists();
+
+        if (!$serviceExists) {
+            $serviceStore = new Service();
+            $serviceStore->service = $this->service['service'];
+            $serviceStore->description = $this->service['description'];
+            $serviceStore->save();
+
+            $this->reset();
+        } else {
+            $this->addError('service.service', 'Servicio existente.');
+        }
     }
 
     public function edit($id)
@@ -42,11 +52,17 @@ class Services extends Component
 
     public function update()
     {
-        $this->validate();
-        Service::find($this->editService)->update([
-            'service' => $this->serviceEdit['service'],
-            'description' => $this->serviceEdit['description'],
+        $this->validate([
+            'serviceEdit.service' => 'required'
         ]);
+
+        $id = $this->editService;
+
+        $serviceUpdate = Service::find($id);
+        $serviceUpdate->service = $this->serviceEdit['service'];
+        $serviceUpdate->description = $this->serviceEdit['description'];
+        $serviceUpdate->save();
+
         $this->reset();
         $this->editService = null;
     }
@@ -60,15 +76,20 @@ class Services extends Component
     public function delete($id)
     {
         $service = Service::find($id);
-        $service->update([
-            'active' => false
-        ]);
-        $this->render();
+        $service->active = false;
+        $service->save();
+    }
+
+    public function setActive($id)
+    {
+        $service = Service::find($id);
+        $service->active = true;
+        $service->save();
     }
 
     public function render()
     {
-        $this->services = Service::where('active', true)->get();
+        $this->services = Service::all();
         return view('livewire.services');
     }
 }

@@ -3,7 +3,6 @@
     <div class="container mt-3">
 
         <form wire:submit="store">
-
             <div class="row row-cols-sm-1 row-cols-md-4 justify-content-center">
                 <div class="col">
                     <input wire:model="campus.campus" type="text"
@@ -30,7 +29,6 @@
                     <button class="btn btn-primary">Añadir</button>
                 </div>
             </div>
-
         </form>
 
         <div class="table-responsive mt-3">
