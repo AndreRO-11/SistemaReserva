@@ -3,29 +3,29 @@
     <div class="container mt-3">
 
         <form wire:submit="store">
-            <div class="row row-cols-sm-1 row-cols-md-4 justify-content-center">
-                <div class="col">
+            <div class="row row-cols-1 row-cols-md-4 justify-content-center">
+                <div class="col mb-2">
                     <input wire:model="campus.campus" type="text"
                         class="form-control @error('campus.campus') is-invalid @enderror" placeholder="Campus">
                     @error('campus.campus')
                         <span class="error text-danger">{{ $message }}</span>
                     @enderror
                 </div>
-                <div class="col">
+                <div class="col mb-2">
                     <input wire:model="campus.address" type="text"
                         class="form-control @error('campus.address') is-invalid @enderror" placeholder="Dirección">
                     @error('campus.address')
                         <span class="error text-danger">{{ $message }}</span>
                     @enderror
                 </div>
-                <div class="col">
+                <div class="col mb-2">
                     <input wire:model="campus.city" type="text"
                         class="form-control @error('campus.city') is-invalid @enderror" placeholder="Ciudad">
                     @error('campus.city')
                         <span class="error text-danger">{{ $message }}</span>
                     @enderror
                 </div>
-                <div class="col opciones_boton">
+                <div class="col mb-2 opciones_boton">
                     <button class="btn btn-primary">Añadir</button>
                 </div>
             </div>

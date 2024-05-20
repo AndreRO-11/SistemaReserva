@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Enums\ReservationStatusEnum;
 use App\Mail\ReservationStatusEmail;
+use App\Models\Campus;
 use App\Models\Reservation;
 use App\Models\Service;
 use Carbon\Carbon;
@@ -13,10 +14,15 @@ use Livewire\WithPagination;
 
 class Reservations extends Component
 {
-    public $reservations, $statusFilter = null, $selectedServices = [], $selectedHours = [], $allServices = [], $showServices = [];
+    public $reservations, $selectedHours = [], $allServices = [], $showServices = [];
     public $placeEdit, $clientEdit, $hours = [], $reservationId, $comment;
 
-    public $userCity, $userCampus;
+    public $reservation ,$place, $clientForm, $selectedServices = [], $campuses;
+    public $dataReservation = false ,$showReservation = false, $editReservation = false;
+
+    // FILTROS
+    public $statusFilter = null, $campusFilter, $placeFilter = null, $uniquePlaces, $dateFilter = null;
+
     use WithPagination;
 
     public $reservationEdit = [
@@ -27,130 +33,180 @@ class Reservations extends Component
         'selectedServices' => []
     ];
 
+    public $reservationForm = [
+        'activity' => '',
+        'assistants' => '',
+        'associated_project' => '',
+        'comment' => ''
+    ];
+
     public function show($id)
     {
-        $this->reservationId = $id;
-        $reservation = Reservation::with('place', 'client', 'hours', 'services')->find($id);
-        $this->reservationEdit['activity'] = $reservation->activity;
-        $this->reservationEdit['assistants'] = $reservation->assistants;
-        $this->reservationEdit['associated_project'] = $reservation->associated_project;
-        $this->reservationEdit['comment'] = $reservation->comment;
+        $this->dataReservation();
+        $this->showReservation();
 
-        $this->placeEdit = $reservation->place;
-        $this->clientEdit = $reservation->client;
-        $this->hours = $reservation->hours;
-        $this->showServices = $reservation->services;
+        $this->reservation = Reservation::with('place', 'client', 'hours', 'services')->find($id);
+
+        $this->hours = $this->reservation->hours;
+        $this->selectedServices = $this->reservation->services;
     }
 
     public function edit($id)
     {
-        $reservation = Reservation::with('place', 'client', 'hours', 'services')->find($id);
+        $this->showReservation();
+        $this->editReservation();
+
+        $this->reservation = Reservation::with('place', 'client', 'hours', 'services')->find($id);
         $this->reservationId = $id;
-        $this->reservationEdit['activity'] = $reservation->activity;
-        $this->reservationEdit['assistants'] = $reservation->assistants;
-        $this->reservationEdit['associated_project'] = $reservation->associated_project;
-        $this->reservationEdit['comment'] = $reservation->comment;
 
-        $this->placeEdit = $reservation->place;
-        $this->clientEdit = $reservation->client;
-        $this->hours = $reservation->hours;
-        $this->reservationEdit['selectedServices'] = $reservation->services->pluck('id')->toArray();
+        $this->reservationForm['activity'] = $this->reservation->activity;
+        $this->reservationForm['assistants'] = $this->reservation->assistants;
+        $this->reservationForm['associated_project'] = $this->reservation->associated_project;
+        $this->reservationForm['comment'] = $this->reservation->comment;
 
-        $allServices = Service::all();
-        $this->allServices = $allServices;
+        $this->hours = $this->reservation->hours;
+        $this->selectedServices = $this->reservation->services->pluck('id')->toArray();
+
+        $this->allServices = Service::where('active', true)->get();
     }
 
     public function update()
     {
         $this->validate([
-            'reservationEdit.activity' => 'required',
-            'reservationEdit.assistants' => 'required',
+            'reservationForm.activity' => 'required',
+            'reservationForm.assistants' => 'required',
         ]);
-        $reservation = Reservation::with('services')->find($this->reservationId);
-        $reservation->update([
-            'comment' => $this->comment,
-            'activity' => $this->reservationEdit['activity'],
-            'associated_project' => $this->reservationEdit['associated_project'],
-            'assistants' => $this->reservationEdit['assistants'],
-        ]);
-        $reservation->services()->sync($this->reservationEdit['selectedServices']);
 
+        $id = $this->reservationId;
+
+        $reservation = Reservation::find($id);
+
+        $reservation->comment = $this->reservationForm['comment'];
+        $reservation->activity = $this->reservationForm['activity'];
+        $reservation->associated_project = $this->reservationForm['associated_project'];
+        $reservation->assistants = $this->reservationForm['assistants'];
+        $reservation->services()->sync($this->selectedServices);
+        $reservation->save();
+
+        $this->close();
         $this->reset();
     }
 
     public function delete($id)
     {
         $reservation = Reservation::find($id);
-        $reservation->update([
-            'active' => false
-        ]);
+        $reservation->active = false;
+        $reservation->save();
+    }
+
+    public function close()
+    {
+        $this->dataReservation = false;
+        $this->showReservation = false;
+        $this->editReservation = false;
+
+        $this->reset();
+        $this->render();
+    }
+
+    public function dataReservation()
+    {
+        $this->dataReservation = !$this->dataReservation;
+    }
+
+    public function showReservation()
+    {
+        $this->showReservation = !$this->showReservation;
+    }
+
+    public function editReservation()
+    {
+        $this->editReservation = !$this->editReservation;
     }
 
     public function statusApproved($id)
     {
         $reservation = Reservation::with(['client'])->where('id', $id)->first();
-        $reservation->update([
-            'status' => ReservationStatusEnum::approved,
-            'user_id' => auth()->user()->id
-        ]);
+        $reservation->status = ReservationStatusEnum::approved;
+        $reservation->user_id = auth()->user()->id;
+        $reservation->save();
+
         // Email
         Mail::to($reservation->client->email)->send(new ReservationStatusEmail($reservation->id));
+
+        $this->close();
+        $this->mount();
     }
 
     public function statusReject($id)
     {
         $reservation = Reservation::with(['client'])->where('id', $id)->first();
-        $reservation->update([
-            'status' => ReservationStatusEnum::rejected,
-            'user_id' => auth()->user()->id
-        ]);
+        $reservation->status = ReservationStatusEnum::rejected;
+        $reservation->user_id = auth()->user()->id;
+        $reservation->save();
+
         // Email
         Mail::to($reservation->client->email)->send(new ReservationStatusEmail($reservation->id));
+
+        $this->close();
     }
 
     public function filterByStatus($status)
     {
         $this->statusFilter = ($this->statusFilter == $status) ? null : $status;
+        $this->updateReservations();
+    }
+
+    public function filterByPlace($place)
+    {
+        $this->placeFilter = ($this->placeFilter == $place) ? null : $place;
+        $this->updateReservations();
+    }
+
+    public function updateReservations()
+    {
+        $reservationsQuery = Reservation::with('place.building.campus', 'client', 'hours', 'dates')
+            ->where('active', true)
+            ->whereHas('place.building.campus', function ($query) {
+                $query->where('campus_id', $this->campusFilter);
+            })
+            ->orderByRaw("FIELD(reservations.status, 'PENDIENTE', 'APROBADO', 'RECHAZADO') ASC");
+
+        $reservations = $reservationsQuery->get();
+
+        $this->uniquePlaces = $reservations->pluck('place')->unique('id')->values();
+
+        if ($this->placeFilter != null) {
+            $reservationsQuery->when($this->placeFilter, function ($query) {
+                $query->whereHas('place', function ($subquery) {
+                    $subquery->where('id', $this->placeFilter);
+                });
+            });
+        }
+
+        if ($this->dateFilter != null) {
+            $reservationsQuery->whereHas('dates', function ($query) {
+                $query->where('date', $this->dateFilter);
+            });
+        }
+
+        $this->reservations = $reservationsQuery->get();
+    }
+
+    public function mount()
+    {
+        $this->campusFilter = auth()->user()->campus_id;
+        $this->placeFilter = '';
+        $this->updateReservations();
     }
 
     public function render()
     {
-        if (auth()->check()) {
-            $user = auth()->user();
-            $this->userCity = $user->city;
-            $this->userCampus = $user->campus;
-            // $this->reservations = Reservation::with('place', 'client', 'hours', 'dates', 'place.buildings')
-            //     ->where('city', $this->userCity)
-            //     ->where('campus', $this->userCampus)
-            //     ->
-            //     ->where('active', true)
-            //    ->get();
-
-            // $this->reservations = Reservation::where('active', true)
-            //     ->with('client', 'hours', 'dates')
-            //     ->with('place')
-            //     ->whereHas('building' , function ($query) {
-            //         $query->where('city', $this->userCity)
-            //             ->where('campus', $this->userCampus)
-            //             ->get();
-            //     });
-            $reservations = Reservation::where('active', true)
-                ->whereHas('place.building', function ($query) {
-                    $query->where('city', $this->userCity)
-                        ->where('campus', $this->userCampus);
-                })
-                ->with('client', 'hours', 'dates', 'place.building')
-                ->get();
-
-        } else if ($this->statusFilter == 'ALL') {
-            $reservations = Reservation::where('active', true)
-            ->with('place', 'client', 'hours', 'dates')
-            ->get();
-        }
-        $this->reservations = $reservations;
+        $this->campuses = Campus::where('active', true)->get();
 
         return view('livewire.reservations', [
             'reservations' => $this->reservations,
+            'campuses' => $this->campuses
         ]);
     }
 }

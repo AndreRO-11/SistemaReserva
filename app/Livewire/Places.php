@@ -18,6 +18,7 @@ use App\Models\Type;
 use App\Models\User;
 use Carbon\Carbon as Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 
@@ -40,16 +41,6 @@ class Places extends Component
         'user_id' => ''
     ];
 
-    public $placeEdit = [
-        'code' => '',
-        'capacity' => '',
-        'floor' => '',
-        'type_id' => '',
-        'building_id' => '',
-        'seat_id' => '',
-        'user_id' => ''
-    ];
-
     public $placeReservation = [
         'code' => '',
         'capacity' => '',
@@ -61,16 +52,6 @@ class Places extends Component
     ];
 
     public $reservation = [
-        'name' => '',
-        'email' => '',
-        'userType' => '',
-        'activity' => '',
-        'assistants' => '',
-        'associated_project' => '',
-        'comment' => '',
-    ];
-
-    public $reservationEdit = [
         'name' => '',
         'email' => '',
         'userType' => '',
@@ -223,7 +204,7 @@ class Places extends Component
         $placeAssistants = $this->reservation['assistants'];
 
         if ($placeAssistants > $this->place->capacity) {
-            $this->addError('assistants', 'La cantidad de asistentes excede la capacidad del lugar.');
+            $this->addError('reservation.assistants', 'La cantidad de asistentes excede la capacidad del lugar.');
         } else {
             $emailId = Email::create();
 
@@ -269,9 +250,9 @@ class Places extends Component
 
             $this->reset();
             $this->selectedDates = Carbon::tomorrow()->toDateString();
+            $this->mount();
         }
 
-        $this->mount();
     }
 
     public function getAvailableHours($placeId)

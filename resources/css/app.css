@@ -1,7 +1,12 @@
-
 .contenido {
     padding-top: 200px;
     padding-bottom: 75px;
+}
+
+.card {
+    border: 0;
+    border-radius: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 /* Header */
@@ -12,7 +17,14 @@
     background-color: white;
 }
 
-.container_header {
+.footer {
+    display: block;
+    width: 100%;
+    height: 30px;
+    background-color: #1b2e51;
+}
+
+.container_header, .container_footer {
     display: flex;
     padding: 15px 50px;
     justify-content: space-between;
@@ -23,11 +35,12 @@
 }
 
 .navbar {
-    background-color: #1B2E51;
+    background-color: #1b2e51;
     height: 70px;
 }
 
-.navbar a, i {
+.navbar a,
+i {
     color: white;
 
     font-size: medium;
@@ -38,7 +51,7 @@
     font-size: larger;
 }
 .navbar .container {
-    background-color: #1B2E51;
+    background-color: #1b2e51;
 }
 /* Fin header */
 
@@ -47,16 +60,13 @@
     display: flex;
     justify-content: center;
 }
-/* .boton_login {
-    display: flex;
-    justify-content: end;
-    align-items: end;
-} */
-.boton_login i{
+
+.boton_login i {
     color: gray;
     font-size: large;
 }
-.opciones_boton button, a {
+.opciones_boton button,
+a {
     margin: 0 2px;
 }
 
@@ -83,10 +93,10 @@
     justify-content: space-between;
 }
 .report_break {
-    background-color: #1B2E51;
+    background-color: #1b2e51;
     height: 20px;
 }
 .report_footer {
-    background-color: #1B2E51;
+    background-color: #1b2e51;
     height: 20px;
 }

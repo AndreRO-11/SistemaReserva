@@ -66,7 +66,7 @@
         @foreach ($data as $place)
             <h2>Espacio: {{ $place->code }}</h2>
             <p style="font-weight: bold">Reservas realizadas entre las fechas: {{ \Carbon\Carbon::parse($dateFrom)->format('d-m-Y') }} - {{ \Carbon\Carbon::parse($dateTo)->format('d-m-Y') }}</p>
-            <p class="mt-2">{{ $place->building->building }}, Piso {{ $place->floor }} - {{ $place->building->campus }}, {{ $place->building->city }}</p>
+            <p class="mt-2">{{ $place->building->building }}, Piso {{ $place->floor }} - {{ $place->building->campus->campus }}, {{ $place->building->campus->city }}</p>
             <p>
                 Detalles del espacio:
                 {{ implode(', ', $place->details->pluck('detail')->toArray()) }}.
@@ -94,11 +94,11 @@
                                 <th scope="col">Fecha:</th>
                                 <th scope="col">Horario:</th>
                                 <th scope="col">Actividad:</th>
-                                <th scope="col">Proyecto asociado:</th>
-                                <th scope="col">Asistentes:</th>
+                                <th scope="col">P.A.:</th>
+                                <th scope="col">Asist.:</th>
                                 <th scope="col">Servicios:</th>
                                 <th scope="col">Estatus:</th>
-
+                                <th scope="col">Administrado:</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -137,6 +137,9 @@
                                                 PENDIENTE
 
                                         @endswitch
+                                    </td>
+                                    <td>
+                                        {{ $reservation->user->name ?? '' }}
                                     </td>
                                 </tr>
                                 @endif

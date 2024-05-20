@@ -2,40 +2,40 @@
 
     <div class="container">
 
-        <div class="opciones_boton mb-3 row row-cols-1 row-cols-md-4 row-cols-lg-4">
-            <div class="col text-center pt-3">
-                <label for="selectedDates">
-                    <h6>Fecha a buscar:</h6>
-                </label>
-            </div>
-
-            <div class="col mt-2">
-                <input wire:model="selectedDates" wire:change="actualizarUnreservedPlaces" class="form-control"
-                    type="date" id="selectedDates" required min="{{ \Carbon\Carbon::tomorrow()->toDateString() }}">
-            </div>
-
-            @guest
-                <div class="col mt-2">
-                    <select wire:model="cityFilter" wire:change="actualizarUnreservedPlaces" class="form-select">
-                        <option value="" selected>Filtrar por ciudad.</option>
-                        @foreach ($cities as $city)
-                            <option value="{{ $city }}">{{ $city }}</option>
-                        @endforeach
-                    </select>
+        @if (!$updatePlace && !$bookPlace)
+            <div class="opciones_boton mb-3 row row-cols-1 row-cols-md-4 row-cols-lg-4">
+                <div class="col text-center pt-3">
+                    <label for="selectedDates">
+                        <h6>Fecha a buscar:</h6>
+                    </label>
                 </div>
-            @endguest
 
-            @auth
-                @if (!$updatePlace && !$bookPlace)
+                <div class="col mt-2">
+                    <input wire:model="selectedDates" wire:change="actualizarUnreservedPlaces" class="form-control"
+                        type="date" id="selectedDates" required min="{{ \Carbon\Carbon::tomorrow()->toDateString() }}">
+                </div>
+
+                @guest
+                    <div class="col mt-2">
+                        <select wire:model="cityFilter" wire:change="actualizarUnreservedPlaces" class="form-select">
+                            <option value="" selected>Filtrar por ciudad.</option>
+                            @foreach ($cities as $city)
+                                <option value="{{ $city }}">{{ $city }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endguest
+
+                @auth
+
                     <div class="col opciones_boton mt-2">
                         <button wire:click="$set('addPlace', true)" class="btn btn-primary">
                             Agregar Espacio
                         </button>
                     </div>
-                @endif
-            @endauth
-
-        </div>
+                @endauth
+            </div>
+        @endif
 
         @if (!$unreservedPlaces)
             <div class="mx-auto">
@@ -47,12 +47,13 @@
                     @foreach ($unreservedPlaces as $place)
                         @if ($place->availableHours > 0)
                             <div class="col">
-                                <div class="card @if (!$place->active) border-danger text-bg-danger @endif">
+                                <div
+                                    class="card text-center h-100 @if (!$place->active) border-danger text-bg-danger @endif">
                                     <div class="card-body">
-                                        <h5 class="card-title text-center">{{ $place->code ?? '' }} <span
+                                        <h5 class="card-title">{{ $place->code ?? '' }} <span
                                                 class="badge text-bg-info">{{ $place->capacity }}</span></h5>
                                         <div class="card-text">
-                                            <div class="m-1 text-center">
+                                            <div class="m-1">
                                                 <p style="margin-top:0; margin-bottom:0;">Edificio
                                                     {{ $place->building->building }}, Piso
                                                     {{ $place->floor }}</p>
@@ -60,12 +61,12 @@
                                                     {{ $place->building->campus->campus }},
                                                     {{ $place->building->campus->city }}</p>
                                             </div>
-                                            <div class="m-1 text-center">
+                                            <div class="m-1">
                                                 @foreach ($place->details as $detail)
                                                     <span class="m-1 badge text-bg-info">{{ $detail->detail }}</span>
                                                 @endforeach
                                             </div>
-                                            <div class="text-center">
+                                            <div>
                                                 <p style="margin-top:0; margin-bottom:0;">Horarios disponibles:</p>
                                                 @foreach ($place->availableHours as $hour)
                                                     <button class="btn btn-sm btn-secondary mt-1"
@@ -84,8 +85,8 @@
                                                 <button wire:click="edit({{ $place->id }})" class="btn btn-warning"><i
                                                         class="bi bi-pencil-square text-dark"></i></button>
                                                 @if ($place->active)
-                                                    <button wire:click="delete({{ $place->id }})"
-                                                        class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                                                    <button wire:click="delete({{ $place->id }})" class="btn btn-danger"><i
+                                                            class="bi bi-trash3"></i></button>
                                                 @else
                                                     <button wire:click="setActive({{ $place->id }})"
                                                         class="btn btn-success"><i class="bi bi-check-lg"></i></button>
@@ -163,8 +164,7 @@
                             <div class="col">
                                 <div class="mt-2">
                                     <label class="form-label" for="place.building_id">Ubicación</label>
-                                    <select wire:model="place.building_id" id="place.building_id"
-                                        class="form-select">
+                                    <select wire:model="place.building_id" id="place.building_id" class="form-select">
                                         <option value="" disabled>Seleccione una ubicación.</option>
                                         @foreach ($buildings as $building)
                                             <option value="{{ $building->id }}" required>
@@ -179,12 +179,10 @@
                                     <ul style="list-style-type: none;">
                                         @foreach ($details as $detail)
                                             <li>
-                                                <label class="form-check-label"
-                                                    for="selectedDetails{{ $detail->id }}">
+                                                <label class="form-check-label" for="selectedDetails{{ $detail->id }}">
                                                     <input wire:model="selectedDetails"
-                                                        id="selectedDetails{{ $detail->id }}"
-                                                        class="form-check-input" type="checkbox"
-                                                        value="{{ $detail->id }}">
+                                                        id="selectedDetails{{ $detail->id }}" class="form-check-input"
+                                                        type="checkbox" value="{{ $detail->id }}">
                                                     {{ $detail->detail }}
                                                 </label>
                                             </li>
@@ -214,7 +212,8 @@
                     <div class="card-body">
                         <div class="d-flex">
                             <div class="col">
-                                <h5>{{ $selectedDates }}, Espacio {{ $placeReservation->code ?? '' }}</h5>
+                                <h5 class="card-title">{{ $selectedDates }}, Espacio {{ $placeReservation->code ?? '' }}
+                                </h5>
                             </div>
                             <div class="text-end">
                                 <button wire:click="close" class="btn btn-secondary">
@@ -255,7 +254,7 @@
                                     <label class="form-label" for="reservation.assistants">Cantidad
                                         asistentes</label>
                                     <input wire:model="reservation.assistants" id="reservation.assistants"
-                                        class="form-control" type="number" required>
+                                        class="form-control" type="number" placeholder="Máx. {{ $place->capacity }}" required>
                                     @error('reservation.assistants')
                                         <span class="error text-danger">{{ $message }}</span>
                                     @enderror
@@ -264,8 +263,8 @@
                                     <label class="form-check-label" for="reservation.associated_project">Proyecto
                                         asociado (Si
                                         hay)</label>
-                                    <input wire:model="reservation.associated_project"
-                                        id="reservation.associated_project" class="form-check-input" type="checkbox">
+                                    <input wire:model="reservation.associated_project" id="reservation.associated_project"
+                                        class="form-check-input" type="checkbox">
                                 </div>
                             </div>
                             <div class="col">

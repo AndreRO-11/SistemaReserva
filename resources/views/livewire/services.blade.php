@@ -3,11 +3,11 @@
     <div class="container mt-3">
 
         <form wire:submit="store">
-            <div class="row row-cols-sm-1 row-cols-md-3 justify-content-center">
-                <div class="col-md-5">
+            <div class="row row-cols-1 row-cols-md-3 justify-content-center">
+                <div class="col mb-2">
                     <input wire:model="service.service" type="text" class="form-control" placeholder="Servicio" required>
                 </div>
-                <div class="col-md-5">
+                <div class="col mb-2">
                     <textarea wire:model="service.description" class="form-control" placeholder="Descripción"></textarea>
                 </div>
                 <div class="col-md-1 opciones_boton align-items-start">

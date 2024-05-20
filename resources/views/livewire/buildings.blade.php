@@ -3,18 +3,18 @@
     <div class="container mt-3">
 
         <form wire:submit="store">
-            <div class="row row-cols-sm-1 row-cols-md-5 justify-content-center">
-                <div class="col">
+            <div class="row row-cols-1 row-cols-md-5 justify-content-center">
+                <div class="col mb-2">
                     <input wire:model="buildingStore.building" type="text" class="form-control" placeholder="Edificio"
                         required>
                     @error('buildingStore.building')
                         <span class="error text-danger">{{ $message }}</span>
                     @enderror
                 </div>
-                <div class="col">
+                <div class="col mb-2">
                     <input wire:model="buildingStore.campus_id" type="text" class="form-control" placeholder="{{ $campus->campus }}" disabled>
                 </div>
-                <div class="col opciones_boton">
+                <div class="col mb-2 opciones_boton">
                     <button class="btn btn-primary">Añadir</button>
                 </div>
             </div>

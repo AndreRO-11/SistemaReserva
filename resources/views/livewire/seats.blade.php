@@ -4,13 +4,13 @@
 
         <form wire:submit="store">
             <div class="row row-cols-sm-1 row-cols-md-5 justify-content-center">
-                <div class="col">
+                <div class="col-8">
                     <input wire:model="seat" type="text" class="form-control @error('seat') is-invalid @enderror" placeholder="Tipo de asiento" required>
                     @error('seat')
                         <span class="error text-danger">{{ $message }}</span>
                     @enderror
                 </div>
-                <div class="col opciones_boton">
+                <div class="col-4 opciones_boton">
                     <button class="btn btn-primary">Añadir</button>
                 </div>
             </div>

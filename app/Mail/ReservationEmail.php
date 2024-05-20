@@ -2,8 +2,10 @@
 
 namespace App\Mail;
 
-use App\Models\Client;
+use App\Models\Building;
+use App\Models\Campus;
 use App\Models\Reservation;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -21,11 +23,15 @@ class ReservationEmail extends Mailable
      * Create a new message instance.
      */
     public $reservation;
+    public $user;
 
     public function __construct($id)
     {
-        $this->reservation = Reservation::with(['place', 'services', 'dates', 'hours', 'email', 'client'])
+        $this->reservation = Reservation::with(['place', 'services', 'dates', 'hours', 'email', 'client', 'user'])
         ->find($id);
+        $building = Building::find($this->reservation->place->building_id);
+        $campus = Campus::find($building->campus_id);
+        $this->user = User::where('campus_id', $campus->id)->first();
 
         $this->reservation->email->update([
             'reservation' => true
