@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\Campus;
 use App\Models\Place;
 use Carbon\Carbon;
 use Dompdf\Dompdf;
@@ -10,7 +11,7 @@ use Livewire\Component;
 
 class Reports extends Component
 {
-    public $option;
+    public $option, $campusFilter, $campuses;
     public $dateFrom;
     public $dateTo;
     public $places;
@@ -18,9 +19,20 @@ class Reports extends Component
     public function reportPlace()
     {
         $this->option = 'place';
-        $this->places = Place::with(['building', 'details', 'reservations.dates'])
-        ->where('places.active', true)
-        ->get();
+
+        $this->campusFilter = auth()->user()->campus_id;
+        $this->updatePlaces();
+    }
+
+    public function updatePlaces()
+    {
+        $this->places = Place::with(['building.campus', 'details', 'reservations.dates'])
+            ->when($this->campusFilter, function ($query, $campusId) {
+                $query->whereHas('building.campus', function ($subquery) use ($campusId) {
+                    $subquery->where('campus_id', $campusId);
+                });
+            })
+            ->get();
     }
 
     public function downloadPlace($id)
@@ -29,20 +41,19 @@ class Reports extends Component
         $pathEscudo = public_path('images/escudo-color-gradiente.png');
 
         $data = Place::where('id', $id)
-        ->where('places.active', true)
-        ->with([
-            'details',
-            'type',
-            'seat',
-            'building',
-            'reservations' => function ($query) {
-                $query->where('active', true);
-            },
-            'reservations.dates',
-            'reservations.hours',
-            'reservations.services',
-        ])
-        ->get();
+            ->with([
+                'details',
+                'type',
+                'seat',
+                'building',
+                'reservations' => function ($query) {
+                    $query->where('active', true)->with('user');
+                },
+                'reservations.dates',
+                'reservations.hours',
+                'reservations.services',
+            ])
+            ->get();
 
         $dateReservation = $data->flatMap(function ($place) {
             return $place->reservations->flatMap(function ($reservation) {
@@ -99,7 +110,7 @@ class Reports extends Component
             'dateTo' => $dateTo,
             'totalReservations' => $totalReservations
         ])
-        ->render());
+            ->render());
 
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
@@ -122,12 +133,12 @@ class Reports extends Component
     public function reportDate()
     {
         $this->option = 'date';
+        $this->campusFilter = auth()->user()->campus_id;
     }
 
     public function downloadDates()
     {
-        $data = Place::where('places.active', true)
-        ->with([
+        $data = Place::with([
             'details',
             'type',
             'seat',
@@ -139,7 +150,12 @@ class Reports extends Component
             'reservations.hours',
             'reservations.services',
         ])
-        ->get();
+            ->whereHas('building.campus', function ($query) {
+                $query->where('id', $this->campusFilter);
+            })
+            ->get();
+
+        $campus = Campus::find($this->campusFilter);
 
         $dateReservation = $data->flatMap(function ($place) {
             return $place->reservations->flatMap(function ($reservation) {
@@ -193,8 +209,9 @@ class Reports extends Component
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'data' => $data,
+            'campus' => $campus
         ])
-        ->render());
+            ->render());
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isPhpEnabled', true);
@@ -214,6 +231,8 @@ class Reports extends Component
 
     public function render()
     {
+        $this->campuses = Campus::where('active', true)->get();
+
         return view('livewire.admin.reports');
     }
 }

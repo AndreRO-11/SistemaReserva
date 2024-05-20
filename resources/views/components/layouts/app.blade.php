@@ -11,6 +11,10 @@
 
         @livewireStyles
 
+        <title>Sistema de reservas VRIP</title>
+
+        <link rel="website icon" href="public\images\logosimbologia.png">
+
     </head>
     <body>
 
@@ -82,6 +86,12 @@
             <div class="contenido">
                 {{ $slot }}
             </div>
+
+            <footer class="footer fixed-bottom">
+                <div class="container_footer">
+
+                </div>
+            </footer>
 
         </div>
 

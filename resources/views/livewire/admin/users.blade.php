@@ -2,23 +2,23 @@
     <div class="container">
 
         <form wire:submit="register">
-            <div class="row row-cols-sm-1 row-cols-md-5 justify-content-center mt-3">
-                <div class="col">
+            <div class="row row-cols-1 row-cols-md-5 justify-content-center mt-3">
+                <div class="col mb-2">
                     <input wire:model="name" type="text" class="form-control @error('name') is-invalid @enderror"
                         placeholder="Nombre" required>
                 </div>
-                <div class="col">
+                <div class="col mb-2">
                     <input wire:model="email" type="text" class="form-control @error('email') is-invalid @enderror"
                         placeholder="Correo" required>
                 </div>
-                <div class="col">
+                <div class="col mb-2">
                     <input wire:model="password" type="password"
                         class="form-control @error('password') is-invalid @enderror" placeholder="Contraseña" required>
                     @error('password')
                         <span class="error text-danger">Mínimo 6 caracteres.</span>
                     @enderror
                 </div>
-                <div class="col">
+                <div class="col mb-2">
                     <select wire:model='campus_id' class="form-select @error('campus_id') is-invalid @enderror"
                         required>
                         <option value="">Campus</option>
@@ -27,7 +27,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col opciones_boton m-2">
+                <div class="opciones_boton mb-2">
                     <button class="btn btn-primary">Añadir Usuario</button>
                 </div>
             </div>

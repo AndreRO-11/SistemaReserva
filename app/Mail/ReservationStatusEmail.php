@@ -23,7 +23,7 @@ class ReservationStatusEmail extends Mailable
 
     public function __construct($id)
     {
-        $this->reservation = Reservation::with(['place', 'services', 'dates', 'hours', 'email', 'client'])
+        $this->reservation = Reservation::with(['place', 'services', 'dates', 'hours', 'email', 'client', 'user'])
         ->find($id);
 
         $this->reservation->email->update([
@@ -41,7 +41,7 @@ class ReservationStatusEmail extends Mailable
     {
         return new Envelope(
             from: new Address(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME')),
-            subject: 'Actualización de reserva de espacio UBB',
+            subject: 'Actualización de su reserva de espacio UBB',
         );
     }
 

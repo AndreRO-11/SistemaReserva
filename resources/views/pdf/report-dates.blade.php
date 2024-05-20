@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
         html {
             margin: 0;
         }
+
         header {
             display: block;
             width: 100%;
@@ -16,14 +18,17 @@
             position: fixed;
             top: 0;
         }
+
         .container {
             margin: 2px 50px;
         }
+
         .report_header_container {
             display: flex;
             padding: 20px;
             justify-content: space-between;
         }
+
         .report_break {
             display: block;
             width: 100%;
@@ -31,6 +36,7 @@
             background-color: #1B2E51;
             height: 15px;
         }
+
         .report_footer {
             display: block;
             width: 100%;
@@ -39,17 +45,20 @@
             position: fixed;
             bottom: 0;
         }
-        table{
+
+        table {
             width: 100%;
             border-top: 1px solid black;
             border-bottom: 1px solid black;
         }
+
         .text_left th {
             text-align: left;
         }
     </style>
 
 </head>
+
 <body>
 
     {{-- <header>
@@ -62,17 +71,20 @@
     <div class="report_break" style="margin-top: 0"></div>
 
     <div class="container">
-        <h4>Reservas realizadas entre las fechas: {{ \Carbon\Carbon::parse($dateFrom)->format('d-m-Y') }} - {{ \Carbon\Carbon::parse($dateTo)->format('d-m-Y') }}</h4>
+        <h2>Reservas Campus {{ $campus->campus }}, {{ $campus->city }}</h2>
+        <h4>Dirección: {{ $campus->address }}</h4>
+        <h4>Reservas realizadas entre las fechas: {{ \Carbon\Carbon::parse($dateFrom)->format('d-m-Y') }} -
+            {{ \Carbon\Carbon::parse($dateTo)->format('d-m-Y') }}</h4>
 
         @if (empty($data))
             <br>
             <h4>No existen reservas realizadas dentro de las fechas seleccionadas.</h4>
         @else
             @foreach ($data as $place)
-
                 @if (!empty($place->totalReservations))
                     <h3 style="margin-top: 30px">Espacio: {{ $place->code }}</h3>
-                    <p class="mt-2">{{ $place->building->building }}, Piso {{ $place->floor }} - {{ $place->building->campus }}, {{ $place->building->city }}</p>
+                    <p class="mt-2">{{ $place->building->building }}, Piso {{ $place->floor }} -
+                        {{ $place->building->campus->campus }}, {{ $place->building->campus->city }}</p>
                     <p>
                         Detalles del espacio:
                         {{ implode(', ', $place->details->pluck('detail')->toArray()) }}.
@@ -96,51 +108,58 @@
                                     <th scope="col">Fecha:</th>
                                     <th scope="col">Horario:</th>
                                     <th scope="col">Actividad:</th>
-                                    <th scope="col">Proyecto asociado:</th>
-                                    <th scope="col">Asistentes:</th>
+                                    <th scope="col">P.A.:</th>
+                                    <th scope="col">Asist.:</th>
                                     <th scope="col">Servicios:</th>
                                     <th scope="col">Estatus:</th>
-
+                                    <th scope="col">Administrado:</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($place->reservations as $reservation)
                                     @if ($reservation->dates->first()->date >= $dateFrom && $reservation->dates->first()->date <= $dateTo)
-                                    <tr>
-                                        <td>{{ \Carbon\Carbon::parse(($reservation->dates->first())->date)->format('d-m-Y') }}</td>
-                                        <td>
-                                            @if ($reservation->hours->isNotEmpty())
-                                                {{ \Carbon\Carbon::parse($reservation->hours->min('hour'))->format('H:i') }}
-                                                -
-                                                {{ \Carbon\Carbon::parse($reservation->hours->max('hour'))->addMinutes(40)->format('H:i') }}
-                                            @endif
-                                        </td>
-                                        <td>{{ $reservation->activity }}</td>
-                                        <td>
-                                            @if ($reservation->associated_project) Sí @else No @endif
-                                        </td>
-                                        <td>{{ $reservation->assistants }}</td>
-                                        <td>
-                                            @foreach ($reservation->services as $service)
-                                                {{ $service->service }}
-                                            @endforeach
-                                        </td>
-                                        <td>
-                                            @switch($reservation->status->value)
-                                                @case('APROBADO')
-                                                    APROBADO
+                                        <tr>
+                                            <td>{{ \Carbon\Carbon::parse($reservation->dates->first()->date)->format('d-m-Y') }}
+                                            </td>
+                                            <td>
+                                                @if ($reservation->hours->isNotEmpty())
+                                                    {{ \Carbon\Carbon::parse($reservation->hours->min('hour'))->format('H:i') }}
+                                                    -
+                                                    {{ \Carbon\Carbon::parse($reservation->hours->max('hour'))->addMinutes(40)->format('H:i') }}
+                                                @endif
+                                            </td>
+                                            <td>{{ $reservation->activity }}</td>
+                                            <td>
+                                                @if ($reservation->associated_project)
+                                                    Sí
+                                                @else
+                                                    No
+                                                @endif
+                                            </td>
+                                            <td>{{ $reservation->assistants }}</td>
+                                            <td>
+                                                @foreach ($reservation->services as $service)
+                                                    {{ $service->service }}
+                                                @endforeach
+                                            </td>
+                                            <td>
+                                                @switch($reservation->status->value)
+                                                    @case('APROBADO')
+                                                        APROBADO
                                                     @break
 
-                                                @case('RECHAZADO')
-                                                    RECHAZADO
+                                                    @case('RECHAZADO')
+                                                        RECHAZADO
                                                     @break
 
-                                                @default
-                                                    PENDIENTE
-
-                                            @endswitch
-                                        </td>
-                                    </tr>
+                                                    @default
+                                                        PENDIENTE
+                                                @endswitch
+                                            </td>
+                                            <td>
+                                                {{ $reservation->user->name ?? '' }}
+                                            </td>
+                                        </tr>
                                     @endif
                                 @endforeach
                             </tbody>
