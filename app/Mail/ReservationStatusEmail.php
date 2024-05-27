@@ -42,6 +42,9 @@ class ReservationStatusEmail extends Mailable
         return new Envelope(
             from: new Address(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME')),
             subject: 'Actualización de su reserva de espacio UBB',
+            replyTo: [
+                new Address($this->reservation->user->email, $this->reservation->user->name),
+            ],
         );
     }
 

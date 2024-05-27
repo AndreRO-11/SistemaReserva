@@ -11,17 +11,18 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Masmerise\Toaster\Toaster;
 
 class Reservations extends Component
 {
-    public $reservations, $selectedHours = [], $allServices = [], $showServices = [];
+    public $selectedHours = [], $allServices = [], $showServices = [];
     public $placeEdit, $clientEdit, $hours = [], $reservationId, $comment;
 
     public $reservation ,$place, $clientForm, $selectedServices = [], $campuses;
     public $dataReservation = false ,$showReservation = false, $editReservation = false;
 
     // FILTROS
-    public $statusFilter = null, $campusFilter, $placeFilter = null, $uniquePlaces, $dateFilter = null;
+    public $statusFilter = null, $campusFilter, $placeFilter = null, $uniquePlaces, $dateFilter = null, $activeFilter = false;
 
     use WithPagination;
 
@@ -89,13 +90,22 @@ class Reservations extends Component
         $reservation->save();
 
         $this->close();
-        $this->reset();
+        $this->mount();
     }
 
     public function delete($id)
     {
         $reservation = Reservation::find($id);
         $reservation->active = false;
+        $reservation->save();
+
+        Toaster::success('Se ha eliminado reserva correctamente.');
+    }
+
+    public function setActive($id)
+    {
+        $reservation = Reservation::find($id);
+        $reservation->active = true;
         $reservation->save();
     }
 
@@ -104,9 +114,7 @@ class Reservations extends Component
         $this->dataReservation = false;
         $this->showReservation = false;
         $this->editReservation = false;
-
         $this->reset();
-        $this->render();
     }
 
     public function dataReservation()
@@ -135,7 +143,6 @@ class Reservations extends Component
         Mail::to($reservation->client->email)->send(new ReservationStatusEmail($reservation->id));
 
         $this->close();
-        $this->mount();
     }
 
     public function statusReject($id)
@@ -154,33 +161,53 @@ class Reservations extends Component
     public function filterByStatus($status)
     {
         $this->statusFilter = ($this->statusFilter == $status) ? null : $status;
-        $this->updateReservations();
+        $this->resetPage();
     }
 
-    public function filterByPlace($place)
+    public function filterByPlace()
     {
-        $this->placeFilter = ($this->placeFilter == $place) ? null : $place;
-        $this->updateReservations();
+        $this->placeFilter = ($this->placeFilter !== null) ? $this->placeFilter : null;
+        $this->resetPage();
     }
 
-    public function updateReservations()
+    public function filterByCampus()
     {
-        $reservationsQuery = Reservation::with('place.building.campus', 'client', 'hours', 'dates')
-            ->where('active', true)
-            ->whereHas('place.building.campus', function ($query) {
+        $this->campusFilter = ($this->campusFilter == auth()->user()->campus_id) ? auth()->user()->campus_id : $this->campusFilter;
+        $this->placeFilter = null;
+        $this->resetPage();
+    }
+
+    public function filterByActive()
+    {
+        $this->activeFilter = !$this->activeFilter;
+    }
+
+    public function mount()
+    {
+        $this->campusFilter = auth()->user()->campus_id;
+    }
+
+    public function render()
+    {
+        $this->campuses = Campus::where('active', true)->get();
+
+        $reservationsQuery = Reservation::with('place.building.campus', 'client', 'hours', 'dates');
+
+        if (!$this->activeFilter) {
+            $reservationsQuery->where('active', true);
+        }
+
+        $reservationsQuery->whereHas('place.building.campus', function ($query) {
                 $query->where('campus_id', $this->campusFilter);
-            })
-            ->orderByRaw("FIELD(reservations.status, 'PENDIENTE', 'APROBADO', 'RECHAZADO') ASC");
+            });
 
-        $reservations = $reservationsQuery->get();
-
-        $this->uniquePlaces = $reservations->pluck('place')->unique('id')->values();
+        $allReservations = $reservationsQuery->get();
+        $this->uniquePlaces = $allReservations->pluck('place')->unique('id')->values();
 
         if ($this->placeFilter != null) {
-            $reservationsQuery->when($this->placeFilter, function ($query) {
-                $query->whereHas('place', function ($subquery) {
-                    $subquery->where('id', $this->placeFilter);
-                });
+            $placeFilterValue = $this->placeFilter;
+            $reservationsQuery->whereHas('place', function ($subquery) use ($placeFilterValue) {
+                $subquery->where('id', $placeFilterValue);
             });
         }
 
@@ -190,23 +217,16 @@ class Reservations extends Component
             });
         }
 
-        $this->reservations = $reservationsQuery->get();
-    }
+        // ORDEN
+        $reservationsQuery->orderBy('reservations.active', 'desc')
+        ->orderByRaw("FIELD(reservations.status, 'PENDIENTE', 'APROBADO', 'RECHAZADO') ASC")
+            ->orderBy('created_at', 'asc');
 
-    public function mount()
-    {
-        $this->campusFilter = auth()->user()->campus_id;
-        $this->placeFilter = '';
-        $this->updateReservations();
-    }
-
-    public function render()
-    {
-        $this->campuses = Campus::where('active', true)->get();
+        $reservations = $reservationsQuery->paginate(10);
 
         return view('livewire.reservations', [
-            'reservations' => $this->reservations,
-            'campuses' => $this->campuses
+            'campuses' => $this->campuses,
+            'reservations' => $reservations
         ]);
     }
 }

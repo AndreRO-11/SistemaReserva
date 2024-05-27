@@ -21,15 +21,21 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Places extends Component
 {
-    public $editPlace = null, $dateFilter, $selectedDate, $reservationPlace, $localDate, $unreservedPlaces = [], $availableHours = [];
+    public $editPlace = null, $reservationPlace, $localDate, $availableHours = [];
+    //public $unreservedPlaces = [];
     public $places, $details, $buildings, $types, $seats, $services;
-    public $selectedDetails = [], $selectedServices = [], $selectedHours = [], $selectedDates, $availablePlaces, $allHours;
-    public $cityFilter = null, $campus, $cities;
+    public $selectedDetails = [], $selectedServices = [], $selectedHours = [], $availablePlaces, $allHours, $campuses, $campus;
+    public $cityFilter = null, $buildingFilter = null, $campusFilter = null, $selectedDates;
 
     public $addPlace = false, $updatePlace = false, $bookPlace = false;
+    public $perPage = 3;
+    protected $queryString = ['selectedDates', 'cityFilter', 'campus', 'buildingFilter', 'campusFilter', 'perPage'];
+
+    use WithPagination;
 
     public $place = [
         'code' => '',
@@ -281,80 +287,99 @@ class Places extends Component
         return $formattedHours;
     }
 
-    public function actualizarUnreservedPlaces()
+    public function filterByBuilding()
     {
+        $this->buildingFilter = ($this->buildingFilter !== null) ? $this->buildingFilter : null;
+        $this->resetPage();
+    }
+
+    public function filterByCampus()
+    {
+        $this->campusFilter = ($this->campusFilter !== null) ? $this->campusFilter : null;
+        $this->resetPage();
+    }
+
+    public function filterByCity()
+    {
+        $this->cityFilter = ($this->cityFilter !== null) ? $this->cityFilter : null;
+        $this->resetPage();
+    }
+
+    public function mount()
+    {
+        $this->selectedDates = Carbon::tomorrow()->toDateString();
+        $this->cityFilter = null;
+        $this->campus = null;
+        $this->buildingFilter = null;
+        $this->campusFilter = null;
+    }
+
+    public function render()
+    {
+        $placesQuery = Place::with(['details', 'building', 'reservations.dates', 'reservations.hours']);
+
+        // ACTUALIZAR LUGARES DISPONIBLES
         if (auth()->check()) {
-            $placesQuery = Place::with(['details', 'building', 'reservations.dates', 'reservations.hours']);
             $user = auth()->user();
             $user = User::find($user->id);
             $this->cityFilter = $user->campus->city;
             $this->campus = $user->campus->campus;
 
+            // FILTRO POR CAMPUS
             $placesQuery->whereHas('building', function ($query) {
                 $query->whereHas('campus', function ($subQuery) {
                     $subQuery->where('city', $this->cityFilter)
                         ->where('campus', $this->campus);
                 });
             });
-        } else {
-            $placesQuery = Place::where('active', true)
-                ->with(['details', 'building', 'reservations.dates', 'reservations.hours']);
-            if (!empty($this->cityFilter)) {
-                $placesQuery->whereHas('building.campus', function ($query) {
-                    $query->where('city', $this->cityFilter);
+
+            // FILTRO POR EDIFICIO
+            if ($this->buildingFilter != null) {
+                $placesQuery->whereHas('building', function ($query) {
+                    $query->where('id', $this->buildingFilter);
                 });
-            } else {
-                $this->cityFilter = null;
             }
-        }
 
-        $this->unreservedPlaces = $placesQuery->get();
-
-        foreach ($this->unreservedPlaces as $place) {
-            $availableHours = $this->getAvailableHours($place->id);
-            $place->availableHours = $availableHours->toArray();
-        }
-    }
-
-    public function mount()
-    {
-        $this->selectedDates = Carbon::tomorrow()->toDateString();
-        $this->actualizarUnreservedPlaces();
-    }
-
-    public function render()
-    {
-        if (auth()->check()) {
-            // VISTA PARA USUARIOS
-            $user = Auth::user();
-            $user = User::find($user->id);
-            $this->cityFilter = $user->campus->city;
-            $this->campus = $user->campus->campus;
-
+            // FILTRO EDIFICIOS DEL CAMPUS DEL USUARIO
             $this->buildings = Building::whereHas('campus', function ($query) {
                 $query->where('city', $this->cityFilter)
                     ->where('campus', $this->campus);
             })->get();
         } else {
-            // VISTA PARA VISITAS
-            $this->buildings = Building::where('active', true)->get();
+            $placesQuery->where('active', true);
+
+            // FILTRO POR CAMPUS
+            if ($this->campusFilter != null) {
+                $placesQuery->whereHas('building.campus', function ($query) {
+                    $query->where('campus_id', $this->campusFilter);
+                });
+            }
+        }
+
+        $placesQuery->orderBy('active', 'desc');
+
+        $unreservedPlaces = $placesQuery->paginate($this->perPage);
+
+        foreach ($unreservedPlaces as $place) {
+            $availableHours = $this->getAvailableHours($place->id);
+            $place->availableHours = $availableHours->toArray();
         }
 
         $this->types = Type::all();
         $this->seats = Seat::all();
         $this->details = Detail::all();
         $this->services = Service::where('active', true)->get();
-        $this->cities = Campus::select('city')->distinct()->pluck('city');
+        $this->campuses = Campus::all();
 
         return view('livewire.places', [
-            'places' => $this->unreservedPlaces,
+            'unreservedPlaces' => $unreservedPlaces,
             'details' => $this->details,
             'buildings' => $this->buildings,
             'types' => $this->types,
             'seats' => $this->seats,
             'services' => $this->services,
             'reservationPlace' => $this->reservationPlace,
-            'cities' => $this->cities
+            'campuses' => $this->campuses
         ]);
     }
 }

@@ -11,22 +11,30 @@
                 </div>
 
                 <div class="col mt-2">
-                    <input wire:model="selectedDates" wire:change="actualizarUnreservedPlaces" class="form-control"
-                        type="date" id="selectedDates" required min="{{ \Carbon\Carbon::tomorrow()->toDateString() }}">
+                    <input wire:model.live="selectedDates" class="form-control" type="date" required
+                        min="{{ \Carbon\Carbon::tomorrow()->toDateString() }}">
                 </div>
 
                 @guest
                     <div class="col mt-2">
-                        <select wire:model="cityFilter" wire:change="actualizarUnreservedPlaces" class="form-select">
-                            <option value="" selected>Filtrar por ciudad.</option>
-                            @foreach ($cities as $city)
-                                <option value="{{ $city }}">{{ $city }}</option>
+                        <select wire:model="campusFilter" wire:change="filterByCampus" class="form-select">
+                            <option value="" selected>Filtrar por campus.</option>
+                            @foreach ($campuses as $campus)
+                                <option value="{{ $campus->id }}">{{ $campus->campus }}, {{ $campus->city }}</option>
                             @endforeach
                         </select>
                     </div>
                 @endguest
 
                 @auth
+                    <div class="col mt-2">
+                        <select wire:model="buildingFilter" wire:change="filterByBuilding" class="form-select">
+                            <option value="">Edificio</option>
+                            @foreach ($buildings as $building)
+                                <option value="{{ $building->id }}">{{ $building->building }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
                     <div class="col opciones_boton mt-2">
                         <button wire:click="$set('addPlace', true)" class="btn btn-primary">
@@ -37,13 +45,13 @@
             </div>
         @endif
 
-        @if (!$unreservedPlaces)
-            <div class="mx-auto">
-                <h5>No se encuentran espacios disponibles</h5>
+        @if ($unreservedPlaces === null)
+            <div class="mx-auto mt-3">
+                <h5>No existen espacios registrados.</h5>
             </div>
         @else
-            @if (!$addPlace && !$updatePlace)
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @if (!$addPlace && !$updatePlace && !$bookPlace)
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 my-auto">
                     @foreach ($unreservedPlaces as $place)
                         @if ($place->availableHours > 0)
                             <div class="col">
@@ -85,8 +93,8 @@
                                                 <button wire:click="edit({{ $place->id }})" class="btn btn-warning"><i
                                                         class="bi bi-pencil-square text-dark"></i></button>
                                                 @if ($place->active)
-                                                    <button wire:click="delete({{ $place->id }})" class="btn btn-danger"><i
-                                                            class="bi bi-trash3"></i></button>
+                                                    <button wire:click="delete({{ $place->id }})"
+                                                        class="btn btn-danger"><i class="bi bi-trash3"></i></button>
                                                 @else
                                                     <button wire:click="setActive({{ $place->id }})"
                                                         class="btn btn-success"><i class="bi bi-check-lg"></i></button>
@@ -98,6 +106,9 @@
                             </div>
                         @endif
                     @endforeach
+                </div>
+                <div class="mt-3">
+                    {{ $unreservedPlaces->links() }}
                 </div>
 
             @endif
@@ -164,7 +175,8 @@
                             <div class="col">
                                 <div class="mt-2">
                                     <label class="form-label" for="place.building_id">Ubicación</label>
-                                    <select wire:model="place.building_id" id="place.building_id" class="form-select">
+                                    <select wire:model="place.building_id" id="place.building_id"
+                                        class="form-select">
                                         <option value="" disabled>Seleccione una ubicación.</option>
                                         @foreach ($buildings as $building)
                                             <option value="{{ $building->id }}" required>
@@ -179,10 +191,12 @@
                                     <ul style="list-style-type: none;">
                                         @foreach ($details as $detail)
                                             <li>
-                                                <label class="form-check-label" for="selectedDetails{{ $detail->id }}">
+                                                <label class="form-check-label"
+                                                    for="selectedDetails{{ $detail->id }}">
                                                     <input wire:model="selectedDetails"
-                                                        id="selectedDetails{{ $detail->id }}" class="form-check-input"
-                                                        type="checkbox" value="{{ $detail->id }}">
+                                                        id="selectedDetails{{ $detail->id }}"
+                                                        class="form-check-input" type="checkbox"
+                                                        value="{{ $detail->id }}">
                                                     {{ $detail->detail }}
                                                 </label>
                                             </li>
@@ -212,7 +226,8 @@
                     <div class="card-body">
                         <div class="d-flex">
                             <div class="col">
-                                <h5 class="card-title">{{ $selectedDates }}, Espacio {{ $placeReservation->code ?? '' }}
+                                <h5 class="card-title">{{ $selectedDates }}, Espacio
+                                    {{ $placeReservation->code ?? '' }}
                                 </h5>
                             </div>
                             <div class="text-end">
@@ -254,7 +269,8 @@
                                     <label class="form-label" for="reservation.assistants">Cantidad
                                         asistentes</label>
                                     <input wire:model="reservation.assistants" id="reservation.assistants"
-                                        class="form-control" type="number" placeholder="Máx. {{ $place->capacity }}" required>
+                                        class="form-control" type="number"
+                                        placeholder="Máx. {{ $placeReservation->capacity }}" required>
                                     @error('reservation.assistants')
                                         <span class="error text-danger">{{ $message }}</span>
                                     @enderror
@@ -263,8 +279,8 @@
                                     <label class="form-check-label" for="reservation.associated_project">Proyecto
                                         asociado (Si
                                         hay)</label>
-                                    <input wire:model="reservation.associated_project" id="reservation.associated_project"
-                                        class="form-check-input" type="checkbox">
+                                    <input wire:model="reservation.associated_project"
+                                        id="reservation.associated_project" class="form-check-input" type="checkbox">
                                 </div>
                             </div>
                             <div class="col">
@@ -319,5 +335,20 @@
         @endif
 
     </div>
+
+    <script>
+        document.addEventListener('livewire:load', function() {
+            function updatePerPage() {
+                const cardHeight = 100; // Ajusta según la altura de tu card
+                const windowHeight = window.innerHeight;
+                const perPage = Math.floor(windowHeight / cardHeight);
+
+                @this.set('perPage', perPage);
+            }
+
+            updatePerPage();
+            window.addEventListener('resize', updatePerPage);
+        });
+    </script>
 
 </div>
