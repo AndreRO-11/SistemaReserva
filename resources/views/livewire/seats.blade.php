@@ -16,62 +16,65 @@
             </div>
         </form>
 
-        @if (empty($seats))
-            <div class="text-center mt-3">
-                <h5>No existen registros.</h5>
-            </div>
-        @else
-            <div class="table-responsive mt-3">
-                <table class="table table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th scope="col">Tipo de asiento</th>
-                            <th scope="col" class="text-center">Opciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="table-group-divider">
-                        @foreach ($seats as $seat)
-                            <tr class="@if (!$seat->active) table-danger @endif">
-                                <td>
-                                    @if ($editSeat !== $seat->id)
-                                        {{ $seat->seat }}
-                                    @else
-                                        <input wire:model="seatEdit" type="text"
-                                            class="form-control @error('seatEdit') is-invalid @enderror" required>
-                                        @error('seatEdit')
-                                            <span class="error text-danger">{{ $message }}</span>
-                                        @enderror
-                                    @endif
-                                </td>
-
-                                <td>
-                                    <div class="opciones_boton">
-                                        @if ($editSeat !== $seat->id)
-                                            <button wire:click="edit({{ $seat->id }})" class="btn btn-warning"><i
-                                                    class="bi bi-pencil-square text-dark"></i></button>
-                                            @if ($seat->active)
-                                                <button
-                                                    wire:confirmation="¿Esta seguro de eliminar este tipo de asiento?"
-                                                    wire:click="delete({{ $seat->id }})" class="btn btn-danger"><i
-                                                        class="bi bi-trash3"></i></button>
-                                            @else
-                                                <button wire:click="setActive({{ $seat->id }})"
-                                                    class="btn btn-success"><i class="bi bi-check-lg"></i></button>
-                                            @endif
-                                        @else
-                                            <button wire:click="update" class="btn btn-success"><i
-                                                    class="bi bi-check-lg"></i></button>
-                                            <button wire:click="close" class="btn btn-secondary"><i
-                                                    class="bi bi-x-lg"></i></button>
-                                        @endif
-                                    </div>
-                                </td>
+        <div class="card mt-3">
+            @if ($seats === null)
+                <div class="text-center">
+                    <h5>No existen tipos de asientos registrados.</h5>
+                </div>
+            @else
+                <div class="table-responsive card-body">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th scope="col">Tipo de asiento</th>
+                                <th scope="col" class="text-center">Opciones</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
+                        </thead>
+                        <tbody class="table-group-divider">
+                            @foreach ($seats as $seat)
+                                <tr class="@if (!$seat->active) table-danger @endif">
+                                    <td>
+                                        @if ($editSeat !== $seat->id)
+                                            {{ $seat->seat }}
+                                        @else
+                                            <input wire:model="seatEdit" type="text"
+                                                class="form-control @error('seatEdit') is-invalid @enderror" required>
+                                            @error('seatEdit')
+                                                <span class="error text-danger">{{ $message }}</span>
+                                            @enderror
+                                        @endif
+                                    </td>
+
+                                    <td>
+                                        <div class="opciones_boton">
+                                            @if ($editSeat !== $seat->id)
+                                                <button wire:click="edit({{ $seat->id }})" class="btn btn-warning"><i
+                                                        class="bi bi-pencil-square text-dark"></i></button>
+                                                @if ($seat->active)
+                                                    <button
+                                                        wire:confirmation="¿Esta seguro de eliminar este tipo de asiento?"
+                                                        wire:click="delete({{ $seat->id }})" class="btn btn-danger"><i
+                                                            class="bi bi-trash3"></i></button>
+                                                @else
+                                                    <button wire:click="setActive({{ $seat->id }})"
+                                                        class="btn btn-success"><i class="bi bi-check-lg"></i></button>
+                                                @endif
+                                            @else
+                                                <button wire:click="update" class="btn btn-success"><i
+                                                        class="bi bi-check-lg"></i></button>
+                                                <button wire:click="close" class="btn btn-secondary"><i
+                                                        class="bi bi-x-lg"></i></button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+
 
     </div>
 

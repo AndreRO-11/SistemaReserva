@@ -23,8 +23,6 @@
             @endswitch
             .
         </p>
-        <br>
-        <p>Para más información contáctenos al siguiente correo: {{ $reservation->user->email }}.</p>
     </div>
 
 </div>

@@ -169,6 +169,8 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Barryvdh\DomPDF\ServiceProvider::class,
+        Illuminate\Pagination\PaginationServiceProvider::class,
+        App\Providers\ToasterServiceProvider::class,
     ])->toArray(),
 
     /*

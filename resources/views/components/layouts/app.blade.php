@@ -1,37 +1,41 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        @vite(['/resources/css/app.css'])
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-        @livewireStyles
+    @vite(['/resources/css/app.css'])
 
-        <title>Sistema de reservas VRIP</title>
+    @livewireStyles
 
-        <link rel="website icon" href="public\images\logosimbologia.png">
+    <title>Sistema de reservas VRIP</title>
 
-    </head>
-    <body>
+    <link rel="icon" href="images/escudo-icono.png">
 
-        <div>
+</head>
 
-            <header class="header fixed-top">
-                <div class="container_header">
-                    <a href="https://vrip.ubiobio.cl/inicio/">
-                        <img src="{{ asset('images/Logo_VRIP.png') }}" alt="">
-                    </a>
-                    <img src="{{ asset('images/escudo-color-gradiente.png') }}" alt="">
-                </div>
-                <nav class="navbar navbar-expand-lg">
-                    <div class="container-fluid">
-                        @auth
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-                            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+<body>
+
+    <div>
+
+        <header class="header fixed-top">
+            <div class="container_header">
+                <a href="https://vrip.ubiobio.cl/inicio/">
+                    <img src="{{ asset('images/Logo_VRIP.png') }}" alt="">
+                </a>
+                <img src="{{ asset('images/escudo-color-gradiente.png') }}" alt="">
+            </div>
+            <nav class="navbar navbar-expand-lg">
+                <div class="container-fluid">
+                    @auth
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
                             <span><i class="bi bi-list"></i></span>
                         </button>
                         <div class="container">
@@ -70,34 +74,47 @@
                                 </ul>
                             </div>
                         </div>
-                        @endauth
-                        @guest
+                    @endauth
+                    @guest
                         <div class="container">
                             <div class="boton_login text-end">
                                 <a href="/login" class="btn" style="font-size: small">INICIAR SESIÓN</i></a>
-                                {{-- <span><a href="/login" class="btn"><i class="bi bi-person-fill"></i></a></span> --}}
                             </div>
                         </div>
-                        @endguest
-                    </div>
-                </nav>
-            </header>
-
-            <div class="contenido">
-                {{ $slot }}
-            </div>
-
-            <footer class="footer fixed-bottom">
-                <div class="container_footer">
-
+                    @endguest
                 </div>
-            </footer>
+            </nav>
+        </header>
 
+        <div class="contenido">
+            {{ $slot }}
+            <x-toaster-hub />
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <footer class="footer fixed-bottom">
+            <div class="container_footer">
+                @auth
+                    <p style="color: white">Usuario: {{ Auth::user()->name }} - {{ Auth::user()->email }}</p>
+                @endauth
+            </div>
+        </footer>
 
-        @livewireScripts()
+    </div>
 
-    </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
+    </script>
+
+    {{-- <script>
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('showToast', (event) => {
+                Livewire.emit('showToast', message, color);
+            });
+        });
+    </script> --}}
+
+    @livewireScripts()
+
+</body>
+
 </html>

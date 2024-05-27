@@ -16,12 +16,13 @@
             </div>
         </form>
 
-        @if (empty($services))
-            <div class="text-center mt-3">
-                <h5>No existen registros.</h5>
+        <div class="card mt-3">
+            @if ($services === null)
+            <div class="text-center">
+                <h5>No existen servicios registrados.</h5>
             </div>
         @else
-            <div class="table-responsive mt-3">
+            <div class="table-responsive card-body">
                 <table class="table table-sm table-hover align-top">
                     <thead>
                         <tr>
@@ -75,6 +76,7 @@
                 </table>
             </div>
         @endif
+        </div>
 
     </div>
 

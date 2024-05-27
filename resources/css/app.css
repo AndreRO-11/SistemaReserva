@@ -24,10 +24,14 @@
     background-color: #1b2e51;
 }
 
-.container_header, .container_footer {
+.container_header  {
     display: flex;
     padding: 15px 50px;
     justify-content: space-between;
+}
+.container_footer {
+    display: flex;
+    justify-content: center;
 }
 
 .header img {

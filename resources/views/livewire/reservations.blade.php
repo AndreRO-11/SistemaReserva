@@ -4,12 +4,11 @@
 
         @if (!$dataReservation)
             <div class="d-grid gap-2 d-md-flex justify-content-center">
-                <div class="">
-                    <input wire:model="dateFilter" wire:change="updateReservations" class="form-control"
-                        type="date">
+                <div>
+                    <input wire:model.live="dateFilter" class="form-control" type="date">
                 </div>
                 <div>
-                    <select wire:model="placeFilter" wire:change="updateReservations" class="form-select">
+                    <select wire:model="placeFilter" wire:change="filterByPlace" class="form-select">
                         <option value="">Espacio</option>
                         @foreach ($uniquePlaces as $place)
                             <option value="{{ $place->id }}">{{ $place->code }}</option>
@@ -17,7 +16,7 @@
                     </select>
                 </div>
                 <div>
-                    <select wire:model="campusFilter" wire:change="updateReservations" class="form-select">
+                    <select wire:model="campusFilter" wire:change="filterByCampus" class="form-select">
                         @foreach ($campuses as $campus)
                             <option value="{{ $campus->id }}">{{ $campus->campus }}, {{ $campus->city }}</option>
                         @endforeach
@@ -35,75 +34,101 @@
                         data-bs-toggle="button">RECHAZADO</button>
 
                 </div>
+                <div>
+                    <button wire:click="filterByActive" class="btn btn-warning">
+                        @if ($activeFilter)
+                            <i class="bi bi-x-lg text-dark"></i>
+                        @else
+                            <i class="bi bi-check2 text-dark"></i>
+                        @endif
+                        VER TODOS
+                    </button>
+                </div>
             </div>
 
-            @if (empty($reservations))
-                <div class="mx-auto">
-                    <h5>No existen reservaciones.</h5>
-                </div>
-            @else
-                <div class="table-responsive mt-3">
-                    <table class="table table-sm table-hover align-middle">
-                        <thead>
-                            <tr>
-                                <th scope="col">Fecha</th>
-                                <th scope="col" class="text-center">Hora Inicio - Término</th>
-                                <th scope="col">Espacio</th>
-                                <th scope="col">Reservado por</th>
-                                <th scope="col">Actividad</th>
-                                <th scope="col" class="text-center">Asistentes</th>
-                                <th scope="col" class="text-center">Estado</th>
-                                <th scope="col" class="text-center">Opciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="table-group-divider">
-                            @foreach ($reservations as $reservation)
-                                @if (!$statusFilter || $reservation->status->value === $statusFilter)
-                                    <tr>
-                                        <td>{{ $reservation->dates->first()->date ?? '' }}</td>
-                                        <td class="text-center">
-                                            @if ($reservation->hours->isNotEmpty())
-                                                {{ \Carbon\Carbon::parse($reservation->hours->min('hour'))->format('H:i') }}
-                                                -
-                                                {{ \Carbon\Carbon::parse($reservation->hours->max('hour'))->addMinutes(40)->format('H:i') }}
-                                            @endif
-                                        </td>
-                                        <td>{{ $reservation->place->code }} -
-                                            {{ $reservation->place->building->building }},
-                                            {{ $reservation->place->building->campus->campus }} -
-                                            {{ $reservation->place->building->campus->city }}</td>
-                                        <td>{{ $reservation->client->name }}</td>
-                                        <td>{{ $reservation->activity }}</td>
-                                        <td class="text-center">{{ $reservation->assistants }}</td>
-                                        <td class="text-center">
-                                            @switch($reservation->status->value)
-                                                @case('APROBADO')
-                                                    <h5><span class="badge bg-success">{{ $reservation->status }}</span></h5>
-                                                @break
+            <div class="card mt-3">
+                @if ($reservations === null)
+                    <div class="text-center">
+                        <h5>No existen reservaciones.</h5>
+                    </div>
+                @else
+                    <div class="table-responsive card-body">
+                        <table class="table table-sm table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Fecha</th>
+                                    <th scope="col" class="text-center">Hora Inicio - Término</th>
+                                    <th scope="col">Espacio</th>
+                                    <th scope="col">Reservado por</th>
+                                    <th scope="col">Actividad</th>
+                                    <th scope="col" class="text-center">Asistentes</th>
+                                    <th scope="col" class="text-center">Estado</th>
+                                    <th scope="col" class="text-center">Opciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-group-divider">
+                                @foreach ($reservations as $reservation)
+                                    @if (!$statusFilter || $reservation->status->value === $statusFilter)
+                                        <tr class="@if (!$reservation->active) table-danger  @endif">
+                                            <td>{{ $reservation->dates->first()->date ?? '' }}</td>
+                                            <td class="text-center">
+                                                @if ($reservation->hours->isNotEmpty())
+                                                    {{ \Carbon\Carbon::parse($reservation->hours->min('hour'))->format('H:i') }}
+                                                    -
+                                                    {{ \Carbon\Carbon::parse($reservation->hours->max('hour'))->addMinutes(40)->format('H:i') }}
+                                                @endif
+                                            </td>
+                                            <td>{{ $reservation->place->code }} -
+                                                {{ $reservation->place->building->building }},
+                                                {{ $reservation->place->building->campus->campus }} -
+                                                {{ $reservation->place->building->campus->city }}</td>
+                                            <td>{{ $reservation->client->name }}</td>
+                                            <td>{{ $reservation->activity }}</td>
+                                            <td class="text-center">{{ $reservation->assistants }}</td>
+                                            <td class="text-center">
+                                                @switch($reservation->status->value)
+                                                    @case('APROBADO')
+                                                        <h5><span class="badge bg-success">{{ $reservation->status }}</span>
+                                                        </h5>
+                                                    @break
 
-                                                @case('RECHAZADO')
-                                                    <h5><span class="badge bg-danger">{{ $reservation->status }}</span></h5>
-                                                @break
+                                                    @case('RECHAZADO')
+                                                        <h5><span class="badge bg-danger">{{ $reservation->status }}</span>
+                                                        </h5>
+                                                    @break
 
-                                                @default
-                                                    <h5><span class="badge bg-secondary">{{ $reservation->status }}</span></h5>
-                                            @endswitch
-                                        </td>
-                                        <td>
-                                            <div class="opciones_boton">
-                                                <button wire:click="show({{ $reservation->id }})"
-                                                    class="btn btn-primary"><i class="bi bi-eye"></i></button>
-                                                <button wire:click="delete({{ $reservation->id }})"
-                                                    class="btn btn-danger"><i class="bi bi-trash3"></i></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endif
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+                                                    @default
+                                                        <h5><span class="badge bg-secondary">{{ $reservation->status }}</span>
+                                                        </h5>
+                                                @endswitch
+                                            </td>
+                                            <td>
+                                                <div class="opciones_boton">
+                                                    <button wire:click="show({{ $reservation->id }})"
+                                                        class="btn btn-primary"><i class="bi bi-eye"></i></button>
+                                                    @if ($reservation->active)
+                                                        <button wire:click="delete({{ $reservation->id }})"
+                                                        class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                                                    @else
+                                                        <button wire:click="setActive({{ $reservation->id }})"
+                                                        class="btn btn-success"><i class="bi bi-check-lg"></i></button>
+                                                    @endif
+
+
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+            </div>
+            <div class="mt-2">
+                {{ $reservations->links() }}
+            </div>
+
+        @endif
         @endif
 
         {{-- VER RESERVA --}}

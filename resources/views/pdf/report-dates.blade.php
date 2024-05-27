@@ -76,7 +76,7 @@
         <h4>Reservas realizadas entre las fechas: {{ \Carbon\Carbon::parse($dateFrom)->format('d-m-Y') }} -
             {{ \Carbon\Carbon::parse($dateTo)->format('d-m-Y') }}</h4>
 
-        @if (empty($data))
+        @if ($data === null)
             <br>
             <h4>No existen reservas realizadas dentro de las fechas seleccionadas.</h4>
         @else
