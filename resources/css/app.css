@@ -3,6 +3,13 @@
     padding-bottom: 75px;
 }
 
+.spinner_container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
 .card {
     border: 0;
     border-radius: 15px;
@@ -24,7 +31,7 @@
     background-color: #1b2e51;
 }
 
-.container_header  {
+.container_header {
     display: flex;
     padding: 15px 50px;
     justify-content: space-between;
@@ -79,10 +86,22 @@ a {
     justify-content: end;
 }
 
-.login_center {
+.login_container {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+@media (min-width: 960px) {
+    .login_container .card {
+        width: 30rem;
+    }
+}
+
+@media (max-width: 720px) {
+    .login_container .card {
+        width: 100%;
+    }
 }
 
 /* PDF */

@@ -29,11 +29,11 @@ class Places extends Component
     //public $unreservedPlaces = [];
     public $places, $details, $buildings, $types, $seats, $services;
     public $selectedDetails = [], $selectedServices = [], $selectedHours = [], $availablePlaces, $allHours, $campuses, $campus;
-    public $cityFilter = null, $buildingFilter = null, $campusFilter = null, $selectedDates;
+    public $cityFilter = null, $buildingFilter = null, $campusFilter = null, $selectedDates, $activeFilter = true;
 
     public $addPlace = false, $updatePlace = false, $bookPlace = false;
     public $perPage = 3;
-    protected $queryString = ['selectedDates', 'cityFilter', 'campus', 'buildingFilter', 'campusFilter', 'perPage'];
+    //protected $queryString = ['selectedDates', 'cityFilter', 'campus', 'buildingFilter', 'campusFilter', 'perPage'];
 
     use WithPagination;
 
@@ -100,8 +100,10 @@ class Places extends Component
             $this->reset();
             $this->addPlace = false;
             $this->mount();
+            $this->dispatch('success', 'Espacio agregado correctamente.');
         } else {
             $this->addError('place.code', 'Espacio existente.');
+            $this->dispatch('failed', 'Error en datos.');
         }
     }
 
@@ -147,6 +149,7 @@ class Places extends Component
 
         $this->reset();
         $this->mount();
+        $this->dispatch('success', 'Espacio actualizado.');
     }
 
     public function delete($id)
@@ -156,6 +159,7 @@ class Places extends Component
         $place->save();
 
         $this->mount();
+        $this->dispatch('warning','Espacio desactivado.');
     }
 
     public function setActive($id)
@@ -165,6 +169,7 @@ class Places extends Component
         $place->save();
 
         $this->mount();
+        $this->dispatch('success','Espacio activado.');
     }
 
     public function close()
@@ -211,6 +216,7 @@ class Places extends Component
 
         if ($placeAssistants > $this->place->capacity) {
             $this->addError('reservation.assistants', 'La cantidad de asistentes excede la capacidad del lugar.');
+            $this->dispatch('failed', 'Error en datos.');
         } else {
             $emailId = Email::create();
 
@@ -258,7 +264,7 @@ class Places extends Component
             $this->selectedDates = Carbon::tomorrow()->toDateString();
             $this->mount();
         }
-
+        $this->dispatch('success', 'Espacio reservado.');
     }
 
     public function getAvailableHours($placeId)
@@ -305,6 +311,12 @@ class Places extends Component
         $this->resetPage();
     }
 
+    public function filterByActive()
+    {
+        $this->activeFilter = !$this->activeFilter;
+        $this->resetPage();
+    }
+
     public function mount()
     {
         $this->selectedDates = Carbon::tomorrow()->toDateString();
@@ -316,6 +328,7 @@ class Places extends Component
 
     public function render()
     {
+        sleep(1);
         $placesQuery = Place::with(['details', 'building', 'reservations.dates', 'reservations.hours']);
 
         // ACTUALIZAR LUGARES DISPONIBLES
@@ -324,6 +337,11 @@ class Places extends Component
             $user = User::find($user->id);
             $this->cityFilter = $user->campus->city;
             $this->campus = $user->campus->campus;
+
+            // FILTRO ACTIVOS
+            if (!$this->activeFilter) {
+                $placesQuery->where('active', true);
+            }
 
             // FILTRO POR CAMPUS
             $placesQuery->whereHas('building', function ($query) {
@@ -344,7 +362,7 @@ class Places extends Component
             $this->buildings = Building::whereHas('campus', function ($query) {
                 $query->where('city', $this->cityFilter)
                     ->where('campus', $this->campus);
-            })->get();
+            })->whereHas('places', function ($query) {})->get();
         } else {
             $placesQuery->where('active', true);
 

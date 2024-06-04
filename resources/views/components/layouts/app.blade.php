@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
     @vite(['/resources/css/app.css'])
 
@@ -88,7 +89,8 @@
 
         <div class="contenido">
             {{ $slot }}
-            <x-toaster-hub />
+
+            {{-- <x-toaster-hub /> --}}
         </div>
 
         <footer class="footer fixed-bottom">
@@ -104,14 +106,58 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
     </script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
-    {{-- <script>
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.on('showToast', (event) => {
-                Livewire.emit('showToast', message, color);
+    <script>
+
+        // TOASTS
+        document.addEventListener('livewire:initialized', function() {
+            Livewire.on('success', function(message) {
+                Toastify({
+                    text: message,
+                    duration: 3000,
+                    newWindow: true,
+                    close: true,
+                    gravity: 'top',
+                    position: 'right',
+                    stopOnFocus: true,
+                    style: {
+                        background: '#20c997'
+                    },
+                }).showToast();
+            });
+
+            Livewire.on('failed', function(message) {
+                Toastify({
+                    text: message,
+                    duration: 3000,
+                    newWindow: true,
+                    close: true,
+                    gravity: 'top',
+                    position: 'right',
+                    stopOnFocus: true,
+                    style: {
+                        background: '#dc3545'
+                    },
+                }).showToast();
+            });
+
+            Livewire.on('warning', function(message) {
+                Toastify({
+                    text: message,
+                    duration: 3000,
+                    newWindow: true,
+                    close: true,
+                    gravity: 'top',
+                    position: 'right',
+                    stopOnFocus: true,
+                    style: {
+                        background: '#ffc107'
+                    },
+                }).showToast();
             });
         });
-    </script> --}}
+    </script>
 
     @livewireScripts()
 

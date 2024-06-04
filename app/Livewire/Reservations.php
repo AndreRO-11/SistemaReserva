@@ -22,17 +22,10 @@ class Reservations extends Component
     public $dataReservation = false ,$showReservation = false, $editReservation = false;
 
     // FILTROS
-    public $statusFilter = null, $campusFilter, $placeFilter = null, $uniquePlaces, $dateFilter = null, $activeFilter = false;
+    public $statusFilter = null, $campusFilter, $placeFilter = null, $uniquePlaces, $dateFilter = null, $activeFilter = true;
+    public $reservationsCount;
 
     use WithPagination;
-
-    public $reservationEdit = [
-        'activity' => '',
-        'assistants' => '',
-        'associated_project' => '',
-        'comment' => '',
-        'selectedServices' => []
-    ];
 
     public $reservationForm = [
         'activity' => '',
@@ -90,6 +83,8 @@ class Reservations extends Component
         $reservation->save();
 
         $this->close();
+
+        $this->dispatch('success', 'Reservación actualizada.');
         $this->mount();
     }
 
@@ -99,7 +94,7 @@ class Reservations extends Component
         $reservation->active = false;
         $reservation->save();
 
-        Toaster::success('Se ha eliminado reserva correctamente.');
+        $this->dispatch('warning', 'Reservación desactivada.');
     }
 
     public function setActive($id)
@@ -107,6 +102,8 @@ class Reservations extends Component
         $reservation = Reservation::find($id);
         $reservation->active = true;
         $reservation->save();
+
+        $this->dispatch('success', 'Reservación activada.');
     }
 
     public function close()
@@ -115,6 +112,7 @@ class Reservations extends Component
         $this->showReservation = false;
         $this->editReservation = false;
         $this->reset();
+        $this->mount();
     }
 
     public function dataReservation()
@@ -143,6 +141,7 @@ class Reservations extends Component
         Mail::to($reservation->client->email)->send(new ReservationStatusEmail($reservation->id));
 
         $this->close();
+        $this->dispatch('success', 'Reservación aprobada.');
     }
 
     public function statusReject($id)
@@ -156,6 +155,7 @@ class Reservations extends Component
         Mail::to($reservation->client->email)->send(new ReservationStatusEmail($reservation->id));
 
         $this->close();
+        $this->dispatch('success', 'Reservación rechazada.');
     }
 
     public function filterByStatus($status)
@@ -180,21 +180,30 @@ class Reservations extends Component
     public function filterByActive()
     {
         $this->activeFilter = !$this->activeFilter;
+        $this->resetPage();
     }
 
     public function mount()
     {
         $this->campusFilter = auth()->user()->campus_id;
+        $this->resetPage();
     }
 
     public function render()
     {
+        sleep(1);
         $this->campuses = Campus::where('active', true)->get();
 
         $reservationsQuery = Reservation::with('place.building.campus', 'client', 'hours', 'dates');
 
+        // FILTRO ACTIVOS
         if (!$this->activeFilter) {
             $reservationsQuery->where('active', true);
+        }
+
+        // FILTRO POR ESTADO DE RESERVA
+        if ($this->statusFilter != null) {
+            $reservationsQuery->where('status', $this->statusFilter);
         }
 
         $reservationsQuery->whereHas('place.building.campus', function ($query) {
@@ -204,6 +213,7 @@ class Reservations extends Component
         $allReservations = $reservationsQuery->get();
         $this->uniquePlaces = $allReservations->pluck('place')->unique('id')->values();
 
+        // FILTRO POR LUGAR
         if ($this->placeFilter != null) {
             $placeFilterValue = $this->placeFilter;
             $reservationsQuery->whereHas('place', function ($subquery) use ($placeFilterValue) {
@@ -211,11 +221,15 @@ class Reservations extends Component
             });
         }
 
+        // FILTRO POR FECHA
         if ($this->dateFilter != null) {
             $reservationsQuery->whereHas('dates', function ($query) {
                 $query->where('date', $this->dateFilter);
             });
         }
+
+        // CONTADOR DE RESERVACIONES
+        $this->reservationsCount = $reservationsQuery->count();
 
         // ORDEN
         $reservationsQuery->orderBy('reservations.active', 'desc')

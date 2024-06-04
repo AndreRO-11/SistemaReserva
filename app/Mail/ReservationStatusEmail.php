@@ -20,11 +20,13 @@ class ReservationStatusEmail extends Mailable
      * Create a new message instance.
      */
     public $reservation;
+    public $user;
 
     public function __construct($id)
     {
         $this->reservation = Reservation::with(['place', 'services', 'dates', 'hours', 'email', 'client', 'user'])
         ->find($id);
+        $this->user = $this->reservation->place->user;
 
         $this->reservation->email->update([
             'reservation_status' => true
@@ -43,7 +45,7 @@ class ReservationStatusEmail extends Mailable
             from: new Address(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME')),
             subject: 'Actualización de su reserva de espacio UBB',
             replyTo: [
-                new Address($this->reservation->user->email, $this->reservation->user->name),
+                new Address($this->user->email),
             ],
         );
     }

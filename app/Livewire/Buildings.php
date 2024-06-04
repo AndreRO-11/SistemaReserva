@@ -6,12 +6,16 @@ use App\Models\Building;
 use App\Models\Campus;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
+use Livewire\WithPagination;
 
 class Buildings extends Component
 {
     public $editBuilding = null;
-    public $buildings, $campus_id;
+    public $campus_id;
     public $campus, $user;
+    public $activeFilter = true;
+
+    use WithPagination;
 
     public $buildingStore = [
         'building' => '',
@@ -26,8 +30,7 @@ class Buildings extends Component
     public function store()
     {
         $this->validate(([
-            'buildingStore.building' => 'required',
-            //'buildingStore.campus_id' => 'required',
+            'buildingStore.building' => 'required|unique:buildings,building',
         ]));
 
         $building = Building::where('campus_id', $this->user->campus_id)->where('building', $this->buildingStore['building'])->exists();
@@ -41,8 +44,10 @@ class Buildings extends Component
             $buildingStore->save();
 
             $this->reset();
+            $this->dispatch('success', 'Edificio agregado correctamente.');
         } else {
             $this->addError('buildingStore.building', 'Edificio ya existe.');
+            $this->dispatch('failed', 'Error en datos.');
         }
     }
 
@@ -58,8 +63,7 @@ class Buildings extends Component
     public function update()
     {
         $this->validate(([
-            'buildingEdit.building' => 'required',
-            'buildingEdit.campus_id' => 'required',
+            'buildingEdit.building' => 'required|unique:buildings,building'
         ]));
 
         $building = Building::where('campus_id', $this->user->campus_id)->where('building', $this->buildingStore['building'])->exists();
@@ -75,8 +79,10 @@ class Buildings extends Component
 
             $this->reset();
             $this->editBuilding = null;
+            $this->dispatch('success', 'Edificio actualizado correctamente.');
         } else {
             $this->addError('buildingEdit.building', 'Edificio ya existe.');
+            $this->dispatch('failed', 'Error en datos.');
         }
     }
 
@@ -84,6 +90,7 @@ class Buildings extends Component
     {
         $this->editBuilding = null;
         $this->reset();
+        $this->dispatch('warning', 'No se han guardado los cambios.');
     }
 
     public function delete($id)
@@ -91,6 +98,7 @@ class Buildings extends Component
         $building = Building::find($id);
         $building->active = false;
         $building->save();
+        $this->dispatch('warning', 'Edificio desactivado.');
     }
 
     public function setActive($id)
@@ -98,17 +106,31 @@ class Buildings extends Component
         $building = Building::find($id);
         $building->active = true;
         $building->save();
+        $this->dispatch('success', 'Edificio activado.');
+    }
+
+    public function filterByActive()
+    {
+        $this->activeFilter = !$this->activeFilter;
+        $this->resetPage();
     }
 
     public function render()
     {
+        sleep(1);
         $this->user = Auth::user();
 
-        $this->buildings = Building::where('campus_id', $this->user->campus_id)->get();
+        $buildings = Building::where('campus_id', $this->user->campus_id)->orderBy('active', 'desc');
         $this->campus = Campus::where('id', $this->user->campus_id)->first();
 
+        if ($this->activeFilter) {
+            $buildings = $buildings->where('active', true);
+        }
+
+        $buildings = $buildings->paginate(10);
+
         return view('livewire.buildings', [
-            'buildings' => $this->buildings,
+            'buildings' => $buildings,
             'campus' => $this->campus,
         ]);
     }
