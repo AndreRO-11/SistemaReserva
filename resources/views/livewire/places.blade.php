@@ -2,8 +2,8 @@
 
     <div class="container">
 
-        @if (!$updatePlace && !$bookPlace)
-            <div class="opciones_boton mb-3 row row-cols-1 row-cols-md-4 row-cols-lg-4">
+        @if (!$updatePlace && !$bookPlace && !$addPlace)
+            <div class="opciones_boton mb-3 row row-cols-1 row-cols-md-1 row-cols-lg-4">
                 <div class="col text-center pt-3">
                     <label for="selectedDates">
                         <h6>Fecha a buscar:</h6>
@@ -40,6 +40,14 @@
                         <button wire:click="$set('addPlace', true)" class="btn btn-primary">
                             Agregar Espacio
                         </button>
+                        <button wire:click="filterByActive" class="btn btn-warning">
+                            @if ($activeFilter)
+                                <i class="bi bi-toggle-off text-dark"></i>
+                            @else
+                                <i class="bi bi-toggle-on text-dark"></i>
+                            @endif
+                            VER TODO
+                        </button>
                     </div>
                 @endauth
             </div>
@@ -51,7 +59,12 @@
             </div>
         @else
             @if (!$addPlace && !$updatePlace && !$bookPlace)
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 my-auto">
+                <div wire:loading class="spinner_container">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <div wire:loading.class="invisible" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 my-auto">
                     @foreach ($unreservedPlaces as $place)
                         @if ($place->availableHours > 0)
                             <div class="col">
@@ -110,7 +123,6 @@
                 <div class="mt-3">
                     {{ $unreservedPlaces->links() }}
                 </div>
-
             @endif
         @endif
 
@@ -128,7 +140,7 @@
                                 @endif
                             </div>
                             <div class="text-end">
-                                <button wire:click="close" class="btn btn-secondary">
+                                <button wire:loading.attr="disabled" wire:click="close" class="btn btn-secondary">
                                     <i class="bi bi-x-lg"></i>
                                 </button>
                             </div>
@@ -205,11 +217,18 @@
                                 </div>
                             </div>
                         </div>
+                        <div wire:loading class="spinner_container">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
                         <div class="opciones_boton mt-3">
                             @if (!$updatePlace)
-                                <button wire:click="store" class="btn btn-primary">Agregar</button>
+                                <button wire:loading.attr="disabled" wire:click="store"
+                                    class="btn btn-primary">Agregar</button>
                             @else
-                                <button wire:click="update" class="btn btn-primary">Actualizar</button>
+                                <button wire:loading.attr="disabled" wire:click="update"
+                                    class="btn btn-primary">Actualizar</button>
                             @endif
                         </div>
                     </div>
@@ -231,7 +250,7 @@
                                 </h5>
                             </div>
                             <div class="text-end">
-                                <button wire:click="close" class="btn btn-secondary">
+                                <button wire:loading.attr="disabled" wire:click="close" class="btn btn-secondary">
                                     <i class="bi bi-x-lg"></i>
                                 </button>
                             </div>
@@ -325,8 +344,14 @@
                                 </div>
                             </div>
                         </div>
+                        <div wire:loading class="spinner_container">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden"></span>
+                            </div>
+                        </div>
                         <div class="opciones_boton mt-3">
-                            <button wire:click="bookSave" class="btn btn-primary">Reservar</button>
+                            <button wire:loading.attr="disabled" wire:click="bookSave"
+                                class="btn btn-primary">Reservar</button>
                         </div>
                     </div>
                 </div>

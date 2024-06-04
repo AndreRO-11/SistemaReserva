@@ -31,6 +31,7 @@ class ReservationEmail extends Mailable
         ->find($id);
         $building = Building::find($this->reservation->place->building_id);
         $campus = Campus::find($building->campus_id);
+        $this->user = $this->reservation->place->user;
 
         $this->reservation->email->update([
             'reservation' => true
@@ -48,9 +49,9 @@ class ReservationEmail extends Mailable
         return new Envelope(
             from: new Address(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME')),
             subject: 'Reservación de espacio UBB',
-            bcc: [new Address($this->reservation->user->email)],
+            bcc: [new Address($this->user->email)],
             replyTo: [
-                new Address($this->reservation->user->email, $this->reservation->user->name),
+                new Address($this->user->email),
             ],
         );
     }
