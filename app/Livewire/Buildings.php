@@ -13,7 +13,7 @@ class Buildings extends Component
     public $editBuilding = null;
     public $campus_id;
     public $campus, $user;
-    public $activeFilter = true;
+    public $activeFilter = false, $buildingsCount;
 
     use WithPagination;
 
@@ -27,10 +27,15 @@ class Buildings extends Component
         'campus_id' => '',
     ];
 
+    protected $messages = [
+        'buildingStore.building.required' => 'El campo de edificio es obligatorio.',
+        'buildingEdit.building.required' => 'El campo de edificio es obligatorio.',
+    ];
+
     public function store()
     {
         $this->validate(([
-            'buildingStore.building' => 'required|unique:buildings,building',
+            'buildingStore.building' => 'required',
         ]));
 
         $building = Building::where('campus_id', $this->user->campus_id)->where('building', $this->buildingStore['building'])->exists();
@@ -63,7 +68,7 @@ class Buildings extends Component
     public function update()
     {
         $this->validate(([
-            'buildingEdit.building' => 'required|unique:buildings,building'
+            'buildingEdit.building' => 'required'
         ]));
 
         $building = Building::where('campus_id', $this->user->campus_id)->where('building', $this->buildingStore['building'])->exists();
@@ -98,6 +103,7 @@ class Buildings extends Component
         $building = Building::find($id);
         $building->active = false;
         $building->save();
+        $this->resetPage();
         $this->dispatch('warning', 'Edificio desactivado.');
     }
 
@@ -106,6 +112,7 @@ class Buildings extends Component
         $building = Building::find($id);
         $building->active = true;
         $building->save();
+        $this->resetPage();
         $this->dispatch('success', 'Edificio activado.');
     }
 
@@ -123,11 +130,15 @@ class Buildings extends Component
         $buildings = Building::where('campus_id', $this->user->campus_id)->orderBy('active', 'desc');
         $this->campus = Campus::where('id', $this->user->campus_id)->first();
 
-        if ($this->activeFilter) {
+        if (!$this->activeFilter) {
             $buildings = $buildings->where('active', true);
         }
 
+        $buildings = $buildings->orderBy('active', 'desc')
+            ->orderBy('building', 'asc');
+
         $buildings = $buildings->paginate(10);
+        $this->buildingsCount = $buildings->count();
 
         return view('livewire.buildings', [
             'buildings' => $buildings,

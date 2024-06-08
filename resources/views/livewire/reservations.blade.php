@@ -39,7 +39,7 @@
                         data-bs-toggle="button">RECHAZADO</button>
                 </div>
                 <button wire:click="filterByActive" class="btn btn-warning">
-                    @if ($activeFilter)
+                    @if (!$activeFilter)
                         <i class="bi bi-toggle-off text-dark"></i>
                     @else
                         <i class="bi bi-toggle-on text-dark"></i>

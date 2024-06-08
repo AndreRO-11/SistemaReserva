@@ -29,9 +29,9 @@ class Places extends Component
     //public $unreservedPlaces = [];
     public $places, $details, $buildings, $types, $seats, $services;
     public $selectedDetails = [], $selectedServices = [], $selectedHours = [], $availablePlaces, $allHours, $campuses, $campus;
-    public $cityFilter = null, $buildingFilter = null, $campusFilter = null, $selectedDates, $activeFilter = true;
+    public $cityFilter = null, $buildingFilter = null, $campusFilter = null, $selectedDates, $activeFilter = false;
 
-    public $addPlace = false, $updatePlace = false, $bookPlace = false;
+    public $addPlace = false, $updatePlace = false, $bookPlace = false, $placesCount;
     public $perPage = 3;
     //protected $queryString = ['selectedDates', 'cityFilter', 'campus', 'buildingFilter', 'campusFilter', 'perPage'];
 
@@ -363,6 +363,8 @@ class Places extends Component
                 $query->where('city', $this->cityFilter)
                     ->where('campus', $this->campus);
             })->whereHas('places', function ($query) {})->get();
+
+            $this->placesCount = $placesQuery->count();
         } else {
             $placesQuery->where('active', true);
 
@@ -372,6 +374,8 @@ class Places extends Component
                     $query->where('campus_id', $this->campusFilter);
                 });
             }
+
+            $this->placesCount = $placesQuery->count();
         }
 
         $placesQuery->orderBy('active', 'desc');

@@ -22,7 +22,7 @@ class Reservations extends Component
     public $dataReservation = false ,$showReservation = false, $editReservation = false;
 
     // FILTROS
-    public $statusFilter = null, $campusFilter, $placeFilter = null, $uniquePlaces, $dateFilter = null, $activeFilter = true;
+    public $statusFilter = null, $campusFilter, $placeFilter = null, $uniquePlaces, $dateFilter = null, $activeFilter = false;
     public $reservationsCount;
 
     use WithPagination;

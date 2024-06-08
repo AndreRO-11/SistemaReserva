@@ -5,13 +5,20 @@ namespace App\Livewire;
 use App\Models\Type;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Types extends Component
 {
     public $editType = null;
-    public $types;
+    public $typesCount, $activeFilter = false;
 
     public $type, $typeEdit;
+
+    use WithPagination;
+
+    protected $messages = [
+        'type.required' => 'El campo de tipo de espacio es obligatorio.',
+    ];
 
     public function store()
     {
@@ -29,8 +36,10 @@ class Types extends Component
             $typeStore->save();
 
             $this->reset();
+            $this->dispatch('success', 'Tipo de espacio agregado correctamente.');
         } else {
             $this->addError('type', 'Tipo de espacio existente.');
+            $this->dispatch('failed', 'Error en datos.');
         }
     }
 
@@ -60,8 +69,10 @@ class Types extends Component
 
             $this->reset();
             $this->editType = null;
+            $this->dispatch('success', 'Tipo de espacio actualizado correctamente.');
         } else {
             $this->addError('typeEdit', 'Tipo de expacio existente.');
+            $this->dispatch('failed', 'Error en datos.');
         }
     }
 
@@ -69,6 +80,7 @@ class Types extends Component
     {
         $this->editType = null;
         $this->reset();
+        $this->resetPage();
     }
 
     public function delete($id)
@@ -76,6 +88,8 @@ class Types extends Component
         $type = Type::find($id);
         $type->active = false;
         $type->save();
+        $this->resetPage();
+        $this->dispatch('warning', 'Tipo de espacio desactivado.');
     }
 
     public function setActive($id)
@@ -83,12 +97,34 @@ class Types extends Component
         $type = Type::find($id);
         $type->active = true;
         $type->save();
+        $this->resetPage();
+        $this->dispatch('success', 'Tipo de espacio activado.');
+    }
+
+    public function filterByActive()
+    {
+        $this->activeFilter = !$this->activeFilter;
+        $this->resetPage();
     }
 
     public function render()
     {
-        $this->types = Type::all();
+        sleep(1);
 
-        return view('livewire.types');
+        $allTypes = Type::all();
+        $allTypes = Type::query();
+
+        if (!$this->activeFilter) {
+            $allTypes->where('active', true);
+        }
+
+        $allTypes = $allTypes->orderBy('active', 'desc')
+            ->orderBy('type', 'asc');
+
+        $types = $allTypes->paginate(10);
+
+        return view('livewire.types', [
+            'types' => $types
+        ]);
     }
 }

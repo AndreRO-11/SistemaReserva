@@ -3,6 +3,11 @@
     <div class="container">
 
         @if (!$updatePlace && !$bookPlace && !$addPlace)
+            <div wire:loading class="spinner_container">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
             <div class="opciones_boton mb-3 row row-cols-1 row-cols-md-1 row-cols-lg-4">
                 <div class="col text-center pt-3">
                     <label for="selectedDates">
@@ -41,7 +46,7 @@
                             Agregar Espacio
                         </button>
                         <button wire:click="filterByActive" class="btn btn-warning">
-                            @if ($activeFilter)
+                            @if (!$activeFilter)
                                 <i class="bi bi-toggle-off text-dark"></i>
                             @else
                                 <i class="bi bi-toggle-on text-dark"></i>
@@ -53,8 +58,8 @@
             </div>
         @endif
 
-        @if ($unreservedPlaces === null)
-            <div class="mx-auto mt-3">
+        @if ($placesCount === 0 && ($campusFilter != null || $buildingFilter === null))
+            <div wire:loading.class="invisible" class="login_container mt-3">
                 <h5>No existen espacios registrados.</h5>
             </div>
         @else

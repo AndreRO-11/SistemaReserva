@@ -4,10 +4,11 @@ namespace App\Livewire;
 
 use App\Models\Campus;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Campuses extends Component
 {
-    public $editCampus = null, $campuses;
+    public $editCampus = null, $activeFilter = false;
 
     public $campus = [
         'campus' => '',
@@ -19,6 +20,14 @@ class Campuses extends Component
         'campus' => '',
         'address' => '',
         'city' => ''
+    ];
+
+    use WithPagination;
+
+    protected $messages = [
+        'campus.campus.required' => 'El campo de sede es obligatorio.',
+        'campus.address.required' => 'El campo de dirección es obligatorio.',
+        'campus.city.required' => 'El campo de ciudad es obligatorio.',
     ];
 
     public function store()
@@ -45,8 +54,10 @@ class Campuses extends Component
             $campusStore->save();
 
             $this->reset();
+            $this->dispatch('success', 'Sede agregada correctamente.');
         } else {
-            $this->addError('campus.campus', 'Campus ya registrado.');
+            $this->addError('campus.campus', 'Sede ya registrada.');
+            $this->dispatch('failed', 'Error en datos.');
         }
     }
 
@@ -87,8 +98,10 @@ class Campuses extends Component
 
             $this->reset();
             $this->editCampus = null;
+            $this->dispatch('success', 'Sede actualizada correctamente.');
         } else {
-            $this->addError('campusEdit.campus', 'Campus ya registrado.');
+            $this->addError('campusEdit.campus', 'Sede ya registrada.');
+            $this->dispatch('failed', 'Error en datos.');
         }
     }
 
@@ -97,6 +110,8 @@ class Campuses extends Component
         $campus = Campus::find($id);
         $campus->active = false;
         $campus->save();
+        $this->resetPage();
+        $this->dispatch('warning', 'Sede desactivada.');
     }
 
     public function setActive($id)
@@ -104,18 +119,41 @@ class Campuses extends Component
         $campus = Campus::find($id);
         $campus->active = true;
         $campus->save();
+        $this->resetPage();
+        $this->dispatch('success', 'Sede activada.');
     }
 
     public function close()
     {
         $this->editCampus = null;
         $this->reset();
+        $this->resetPage();
+    }
+
+    public function filterByActive()
+    {
+        $this->activeFilter = !$this->activeFilter;
+        $this->resetPage();
     }
 
     public function render()
     {
-        $this->campuses = Campus::all();
+        sleep(1);
 
-        return view('livewire.campuses');
+        $allCampuses = Campus::all();
+        $allCampuses = Campus::query();
+
+        if (!$this->activeFilter) {
+            $allCampuses->where('active', true);
+        }
+
+        $allCampuses = $allCampuses->orderBy('active', 'desc')
+            ->orderBy('campus', 'asc');
+
+        $campuses = $allCampuses->paginate(10);
+
+        return view('livewire.campuses', [
+            'campuses' => $campuses
+        ]);
     }
 }

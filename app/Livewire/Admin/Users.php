@@ -7,12 +7,15 @@ use Livewire\Component;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Livewire\WithPagination;
 
 class Users extends Component
 {
     public $name, $campus_id, $email, $password;
 
-    public $auth, $changePassword = false, $newPassword, $campuses;
+    public $auth, $changePassword = false, $newPassword, $campuses, $activeFilter = false;
+
+    use WithPagination;
 
     // Editar user
     public $editUser = null;
@@ -22,8 +25,21 @@ class Users extends Component
         'campus_id' => ''
     ];
 
+    protected $messages = [
+        'name.required' => 'El campo de nombre es obligatorio.',
+        'email.unique' => 'Email ya registrado.',
+        'email.required' => 'El campo de email es obligatorio.',
+        'user.email.ends_with' => 'El email debe terminar en @...ubiobio.cl',
+        'password.required' => 'El campo contraseña es obligatorio.',
+        'password.min' => 'Mínimo 6 caracteres.',
+        'campus_id.required' => 'Seleccione una sede.',
+    ];
+
     public function register()
     {
+        $this->changePassword = false;
+        $this->editUser = null;
+
         $this->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users|ends_with:@ubiobio.cl,.ubiobio.cl',
@@ -38,9 +54,13 @@ class Users extends Component
         $user->password = $this->password;
         $user->campus_id = $this->campus_id;
         $user->remember_token = Str::random(32);
-        $user->save();
 
-        $this->reset();
+        if ($user->save()) {
+            $this->reset();
+            $this->dispatch('success', 'Usuario agregado correctamente.');
+        } else {
+            $this->dispatch('failed', 'Error en datos.');
+        }
     }
 
     public function edit($id)
@@ -56,26 +76,26 @@ class Users extends Component
 
     public function update()
     {
+        $id = $this->editUser;
+
         $this->validate([
             'user.name' => 'required',
-            'user.email' => 'required|email|ends_with:@ubiobio.cl,.ubiobio.cl',
+            'user.email' => 'required|email|unique:users,email,' . $id . '|ends_with:@ubiobio.cl,.ubiobio.cl',
             'user.campus_id' => 'required'
         ]);
 
-        $id = $this->editUser;
-        $email = User::where('email', $this->user['email'])->exists();
+        $userUpdate = User::find($id);
 
-        if (!$email) {
-            $userUpdate = User::find($id);
-            $userUpdate->name = $this->user['name'];
-            $userUpdate->email = $this->user['email'];
-            $userUpdate->campus_id = $this->user['campus_id'];
-            $userUpdate->save();
+        $userUpdate->name = $this->user['name'];
+        $userUpdate->email = $this->user['email'];
+        $userUpdate->campus_id = $this->user['campus_id'];
 
+        if ($userUpdate->save()) {
             $this->reset();
             $this->editUser = null;
+            $this->dispatch('success', 'Usuario actualizado correctamente.');
         } else {
-            $this->addError('user.email', 'Email ya registrado.');
+            $this->dispatch('failed', 'Error en datos.');
         }
     }
 
@@ -84,6 +104,8 @@ class Users extends Component
         $user = User::find($id);
         $user->active = false;
         $user->save();
+        $this->resetPage();
+        $this->dispatch('warning', 'Usuario desactivado.');
     }
 
     public function setActive($id)
@@ -91,6 +113,8 @@ class Users extends Component
         $user = User::find($id);
         $user->active = true;
         $user->save();
+        $this->resetPage();
+        $this->dispatch('success', 'Usuario activado.');
     }
 
     public function close()
@@ -98,6 +122,7 @@ class Users extends Component
         $this->editUser = null;
         $this->changePassword = false;
         $this->reset();
+        $this->resetPage();
     }
 
 
@@ -108,25 +133,50 @@ class Users extends Component
 
     public function setPassword()
     {
-        $this->validate([
-            'newPassword'=> 'required|min:6',
-        ]);
-        $user = Auth::user();
-        $user->password = $this->newPassword;
-        $user->save();
+        try {
+            $this->validate([
+                'newPassword' => 'required|min:6',
+            ]);
 
-        Auth::attempt(['email' => $user->email, 'password' => $this->newPassword]);
+            Auth::user()->password = $this->newPassword;
+            Auth::attempt(['email' => Auth::user()->email, 'password' => $this->newPassword]);
 
-        $this->toggleChangePassword();
-        $this->reset();
+            $this->toggleChangePassword();
+            $this->reset();
+
+            $this->dispatch('success', 'Contraseña actualizada correctamente.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->addError('newPassword', 'Contraseña obligatoria / Mínimo 6 caracteres.');
+            $this->dispatch('failed', 'Error en datos.');
+        }
+    }
+
+    public function filterByActive()
+    {
+        $this->activeFilter = !$this->activeFilter;
+        $this->resetPage();
     }
 
     public function render()
     {
-        $users = User::all();
+        sleep(1);
+
+        $allUsers = User::all();
+        $allUsers = User::query();
+
+        if (!$this->activeFilter) {
+            $allUsers->where('active', true);
+        }
+
         $this->auth = Auth::user();
 
         $this->campuses = Campus::all();
+
+        // ORDEN
+        $allUsers = $allUsers->orderBy('active', 'desc')
+            ->orderBy('name', 'asc');
+
+        $users = $allUsers->paginate(10);
 
         return view('livewire.admin.users', [
             'users' => $users,
