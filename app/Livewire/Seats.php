@@ -5,14 +5,20 @@ namespace App\Livewire;
 use App\Models\Seat;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Seats extends Component
 {
-    public $editSeat = null;
-    public $seats, $seatEdit;
+    public $editSeat = null, $activeFilter = false;
+    public $seatEdit;
 
     public $seat;
 
+    use WithPagination;
+
+    protected $messages = [
+        'seat.required' => 'El campo de tipo de asiento es obligatorio.',
+    ];
     public function store()
     {
         $this->validate([
@@ -29,8 +35,10 @@ class Seats extends Component
             $seatStore->save();
 
             $this->reset();
+            $this->dispatch('success', 'Tipo de asiento agregado correctamente.');
         } else {
             $this->addError('seat', 'Asiento ya existe.');
+            $this->dispatch('failed', 'Error en datos.');
         }
     }
 
@@ -60,8 +68,10 @@ class Seats extends Component
 
             $this->reset();
             $this->editSeat = null;
+            $this->dispatch('success', 'Tipo de asiento actualizado correctamente.');
         } else {
             $this->addError('seatEdit', 'Asiento ya existe.');
+            $this->dispatch('failed', 'Error en datos.');
         }
     }
 
@@ -69,6 +79,7 @@ class Seats extends Component
     {
         $this->editSeat = null;
         $this->reset();
+        $this->resetPage();
     }
 
     public function delete($id)
@@ -76,6 +87,8 @@ class Seats extends Component
         $seat = Seat::find($id);
         $seat->active = false;
         $seat->save();
+        $this->resetPage();
+        $this->dispatch('warning', 'Tipo de asiento desactivado.');
     }
 
     public function setActive($id)
@@ -83,11 +96,34 @@ class Seats extends Component
         $seat = Seat::find($id);
         $seat->active = true;
         $seat->save();
+        $this->resetPage();
+        $this->dispatch('success', 'Tipo de asiento activado.');
+    }
+
+    public function filterByActive()
+    {
+        $this->activeFilter = !$this->activeFilter;
+        $this->resetPage();
     }
 
     public function render()
     {
-        $this->seats = Seat::all();
-        return view('livewire.seats');
+        sleep(1);
+        $allSeats = Seat::all();
+
+        $allSeats = Seat::query();
+
+        if (!$this->activeFilter) {
+            $allSeats->where('active', true);
+        }
+
+        $allSeats = $allSeats->orderBy('active', 'desc')
+            ->orderBy('seat', 'asc');
+
+        $seats = $allSeats->paginate(10);
+
+        return view('livewire.seats', [
+            'seats' => $seats
+        ]);
     }
 }

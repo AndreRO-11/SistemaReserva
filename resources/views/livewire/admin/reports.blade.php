@@ -10,7 +10,7 @@
             @switch($option)
                 @case('place')
                     <div class="card-body">
-                        <div class="row row-cols-1 row-cols-md-6 justify-content-center">
+                        <div class="row row-cols-1 row-cols-md-4 justify-content-center">
                             <div class="col mb-2">
                                 <label for="campusFilter"></label>
                                 <select wire:model="campusFilter" wire:change="updatePlaces" class="form-select mb-0"
@@ -40,10 +40,10 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @if ($places === null)
-                                        <div class="text-center">
-                                            <h5>No se encuentran espacios registrados.</h5>
-                                        </div>
+                                    @if ($placesCount === 0)
+                                        <tr>
+                                            <td colspan="12" class="text-center">No existen espacios registrados.</td>
+                                        </tr>
                                     @else
                                         @foreach ($places as $place)
                                             <tr class="@if (!$place->active) table-danger @endif">
@@ -72,7 +72,7 @@
                         @if ($campuses === null)
                             <h5 class="text-center">No existen sedes registradas.</h5>
                         @else
-                            <div class="row row-cols-1 row-cols-md-6 justify-content-center">
+                            <div class="row row-cols-1 row-cols-md-4 justify-content-center">
                                 <div class="col mb-2">
                                     <label for="campusFilter"></label>
                                     <select wire:model="campusFilter" wire:change="updatePlaces" class="form-select mb-0"

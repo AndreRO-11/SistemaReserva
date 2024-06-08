@@ -4,8 +4,8 @@
 
         <div class="justify-content-center row row-cols-1 row-cols-md-2 row-cols-lg-3">
             <div class="col mt-2">
-                <input wire:model="buildingStore.building" type="text" class="form-control" placeholder="Edificio"
-                    required>
+                <input wire:model="buildingStore.building" id="buildingStore.building" type="text" class="form-control @error('buildingStore.building') is-invalid @enderror"
+                    placeholder="Edificio" required>
                 @error('buildingStore.building')
                     <span class="error text-danger">{{ $message }}</span>
                 @enderror
@@ -19,7 +19,7 @@
                     Añadir
                 </button>
                 <button wire:click="filterByActive" class="btn btn-warning">
-                    @if ($activeFilter)
+                    @if (!$activeFilter)
                         <i class="bi bi-toggle-off text-dark"></i>
                     @else
                         <i class="bi bi-toggle-on text-dark"></i>
@@ -29,53 +29,24 @@
             </div>
         </div>
 
-        {{-- <form wire:submit="store">
-                <div class="row row-cols-1 row-cols-md-5 justify-content-center">
-                    <div class="col mb-2">
-                        <input wire:model="buildingStore.building" type="text" class="form-control" placeholder="Edificio"
-                            required>
-                        @error('buildingStore.building')
-                            <span class="error text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    <div class="col mb-2">
-                        <input wire:model="buildingStore.campus_id" type="text" class="form-control"
-                            placeholder="{{ $campus->campus }}" disabled>
-                    </div>
-                    <div class="col mb-2 opciones_boton">
-                        <button class="btn btn-primary">
-                            Añadir
-                        </button>
-                    </div>
-                </div>
-            </form>
-            <button wire:click="filterByActive" class="btn btn-warning">
-                @if ($activeFilter)
-                    <i class="bi bi-toggle-off text-dark"></i>
-                @else
-                    <i class="bi bi-toggle-on text-dark"></i>
-                @endif
-                VER TODO
-            </button> --}}
-
         <div class="card mt-3">
-            @if ($buildings === null)
-                <div class="text-center">
-                    <h5>No existen edificios registrados.</h5>
-                </div>
-            @else
-                <div class="table-responsive card-body">
-                    <table class="table table-sm table-hover align-middle">
-                        <thead>
+            <div class="table-responsive card-body">
+                <table class="table table-sm table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th scope="col">Edificio</th>
+                            <th scope="col">Campus</th>
+                            <th scope="col">Dirección</th>
+                            <th scope="col">Ciudad</th>
+                            <th scope="col" class="text-center">Opciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        @if ($buildingsCount === 0)
                             <tr>
-                                <th scope="col">Edificio</th>
-                                <th scope="col">Campus</th>
-                                <th scope="col">Dirección</th>
-                                <th scope="col">Ciudad</th>
-                                <th scope="col" class="text-center">Opciones</th>
+                                <td colspan="12" class="text-center">No existen edificios registrados.</td>
                             </tr>
-                        </thead>
-                        <tbody class="table-group-divider">
+                        @else
                             @foreach ($buildings as $building)
                                 <tr class="@if (!$building->active) table-danger @endif">
                                     @if ($editBuilding !== $building->id)
@@ -102,13 +73,12 @@
                                     <td>
                                         <div class="opciones_boton">
                                             @if ($editBuilding !== $building->id)
-                                                <button wire:click="edit({{ $building->id }})"
-                                                    class="btn btn-warning"><i
+                                                <button wire:click="edit({{ $building->id }})" class="btn btn-warning"><i
                                                         class="bi bi-pencil-square text-dark"></i></button>
                                                 @if ($building->active)
                                                     <button wire:confirmation="¿Esta seguro de eliminar este Edificio?"
-                                                        wire:click="delete({{ $building->id }})"
-                                                        class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                                                        wire:click="delete({{ $building->id }})" class="btn btn-danger"><i
+                                                            class="bi bi-trash3"></i></button>
                                                 @else
                                                     <button wire:click="setActive({{ $building->id }})"
                                                         class="btn btn-success"><i class="bi bi-check-lg"></i></button>
@@ -123,10 +93,10 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+                        @endif
+                    </tbody>
+                </table>
+            </div>
             <div wire:loading class="spinner_container">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden"></span>

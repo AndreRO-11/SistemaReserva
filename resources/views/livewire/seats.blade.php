@@ -2,35 +2,42 @@
 
     <div class="container mt-3">
 
-        <form wire:submit="store">
-            <div class="row row-cols-sm-1 row-cols-md-5 justify-content-center">
-                <div class="col-8">
-                    <input wire:model="seat" type="text" class="form-control @error('seat') is-invalid @enderror" placeholder="Tipo de asiento" required>
-                    @error('seat')
-                        <span class="error text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-                <div class="col-4 opciones_boton">
-                    <button class="btn btn-primary">Añadir</button>
-                </div>
+        <div class="justify-content-center row row-cols-1 row-cols-md-1 row-cols-lg-2">
+            <div class="col mt-2">
+                <input wire:model="seat" type="text" class="form-control @error('seat') is-invalid @enderror"
+                    placeholder="Tipo de asiento" required>
+                @error('seat')
+                    <span class="error text-danger">{{ $message }}</span>
+                @enderror
             </div>
-        </form>
+            <div class="col mt-2 opciones_boton">
+                <button wire:click="store" class="btn btn-primary">Añadir</button>
+                <button wire:click="filterByActive" class="btn btn-warning">
+                    @if (!$activeFilter)
+                        <i class="bi bi-toggle-off text-dark"></i>
+                    @else
+                        <i class="bi bi-toggle-on text-dark"></i>
+                    @endif
+                    VER TODO
+                </button>
+            </div>
+        </div>
 
         <div class="card mt-3">
-            @if ($seats === null)
-                <div class="text-center">
-                    <h5>No existen tipos de asientos registrados.</h5>
-                </div>
-            @else
-                <div class="table-responsive card-body">
-                    <table class="table table-hover align-middle">
-                        <thead>
+            <div class="table-responsive card-body">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th scope="col">Tipo de asiento</th>
+                            <th scope="col" class="text-center">Opciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        @if (count($seats) === 0)
                             <tr>
-                                <th scope="col">Tipo de asiento</th>
-                                <th scope="col" class="text-center">Opciones</th>
+                                <td colspan="12" class="text-center">No se han registrado tipos de asientos.</td>
                             </tr>
-                        </thead>
-                        <tbody class="table-group-divider">
+                        @else
                             @foreach ($seats as $seat)
                                 <tr class="@if (!$seat->active) table-danger @endif">
                                     <td>
@@ -44,17 +51,17 @@
                                             @enderror
                                         @endif
                                     </td>
-
                                     <td>
                                         <div class="opciones_boton">
                                             @if ($editSeat !== $seat->id)
-                                                <button wire:click="edit({{ $seat->id }})" class="btn btn-warning"><i
+                                                <button wire:click="edit({{ $seat->id }})"
+                                                    class="btn btn-warning"><i
                                                         class="bi bi-pencil-square text-dark"></i></button>
                                                 @if ($seat->active)
                                                     <button
                                                         wire:confirmation="¿Esta seguro de eliminar este tipo de asiento?"
-                                                        wire:click="delete({{ $seat->id }})" class="btn btn-danger"><i
-                                                            class="bi bi-trash3"></i></button>
+                                                        wire:click="delete({{ $seat->id }})"
+                                                        class="btn btn-danger"><i class="bi bi-trash3"></i></button>
                                                 @else
                                                     <button wire:click="setActive({{ $seat->id }})"
                                                         class="btn btn-success"><i class="bi bi-check-lg"></i></button>
@@ -69,12 +76,19 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
+            <div wire:loading class="spinner_container">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden"></span>
                 </div>
-            @endif
+            </div>
         </div>
-
+        <div class="mt-2">
+            {{ $seats->links() }}
+        </div>
 
     </div>
 

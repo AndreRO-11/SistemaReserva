@@ -2,52 +2,58 @@
 
     <div class="container mt-3">
 
-        <form wire:submit="store">
-            <div class="row row-cols-1 row-cols-md-4 justify-content-center">
-                <div class="col mb-2">
-                    <input wire:model="campus.campus" type="text"
-                        class="form-control @error('campus.campus') is-invalid @enderror" placeholder="Campus">
-                    @error('campus.campus')
-                        <span class="error text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-                <div class="col mb-2">
-                    <input wire:model="campus.address" type="text"
-                        class="form-control @error('campus.address') is-invalid @enderror" placeholder="Dirección">
-                    @error('campus.address')
-                        <span class="error text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-                <div class="col mb-2">
-                    <input wire:model="campus.city" type="text"
-                        class="form-control @error('campus.city') is-invalid @enderror" placeholder="Ciudad">
-                    @error('campus.city')
-                        <span class="error text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-                <div class="col mb-2 opciones_boton">
-                    <button class="btn btn-primary">Añadir</button>
-                </div>
+        <div class="row row-cols-1 row-cols-md-4 justify-content-center">
+            <div class="col mb-2">
+                <input wire:model="campus.campus" type="text"
+                    class="form-control @error('campus.campus') is-invalid @enderror" placeholder="Sede">
+                @error('campus.campus')
+                    <span class="error text-danger">{{ $message }}</span>
+                @enderror
             </div>
-        </form>
+            <div class="col mb-2">
+                <input wire:model="campus.address" type="text"
+                    class="form-control @error('campus.address') is-invalid @enderror" placeholder="Dirección">
+                @error('campus.address')
+                    <span class="error text-danger">{{ $message }}</span>
+                @enderror
+            </div>
+            <div class="col mb-2">
+                <input wire:model="campus.city" type="text"
+                    class="form-control @error('campus.city') is-invalid @enderror" placeholder="Ciudad">
+                @error('campus.city')
+                    <span class="error text-danger">{{ $message }}</span>
+                @enderror
+            </div>
+            <div class="col mb-2 opciones_boton">
+                <button wire:click="store" class="btn btn-primary">Añadir</button>
+                <button wire:click="filterByActive" class="btn btn-warning">
+                    @if (!$activeFilter)
+                        <i class="bi bi-toggle-off text-dark"></i>
+                    @else
+                        <i class="bi bi-toggle-on text-dark"></i>
+                    @endif
+                    VER TODO
+                </button>
+            </div>
+        </div>
 
         <div class="card mt-3">
-            @if ($campuses === null)
-                <div class="text-center">
-                    <h5>No existen sedes registradas.</h5>
-                </div>
-            @else
-                <div class="table-responsive card-body">
-                    <table class="table table-hover align-middle">
-                        <thead>
+            <div class="table-responsive card-body">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th scope="col">Sede</th>
+                            <th scope="col">Dirección</th>
+                            <th scope="col">Ciudad</th>
+                            <th scope="col" class="text-center">Opciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        @if (count($campuses) === 0)
                             <tr>
-                                <th scope="col">Campus</th>
-                                <th scope="col">Dirección</th>
-                                <th scope="col">Ciudad</th>
-                                <th scope="col" class="text-center">Opciones</th>
+                                <td colspan="12" class="text-center">No existen sedes registradas.</td>
                             </tr>
-                        </thead>
-                        <tbody class="table-group-divider">
+                        @else
                             @foreach ($campuses as $campus)
                                 <tr class="@if (!$campus->active) table-danger @endif">
                                     @if ($editCampus !== $campus->id)
@@ -102,12 +108,19 @@
                                     @endif
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
+            <div wire:loading class="spinner_container">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden"></span>
                 </div>
+            </div>
         </div>
-        @endif
-
+        <div class="mt-2">
+            {{ $campuses->links() }}
+        </div>
     </div>
 
 </div>

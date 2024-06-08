@@ -8,13 +8,18 @@ use Carbon\Carbon;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Reports extends Component
 {
     public $option, $campusFilter, $campuses;
     public $dateFrom;
     public $dateTo;
-    public $places;
+
+    public $placesCount;
+    //public $places;
+
+    use WithPagination;
 
     public function reportPlace()
     {
@@ -26,13 +31,17 @@ class Reports extends Component
 
     public function updatePlaces()
     {
-        $this->places = Place::with(['building.campus', 'details', 'reservations.dates'])
+        $places = Place::with(['building.campus', 'details', 'reservations.dates'])
             ->when($this->campusFilter, function ($query, $campusId) {
                 $query->whereHas('building.campus', function ($subquery) use ($campusId) {
                     $subquery->where('campus_id', $campusId);
                 });
-            })
-            ->get();
+            });
+
+        $this->placesCount = $places->count();
+
+        $places->paginate(3);
+
     }
 
     public function downloadPlace($id)
