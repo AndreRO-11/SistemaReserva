@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ReportsController;
+use App\Livewire\Admin\Report\ReportsByDates;
+use App\Livewire\Admin\Report\ReportsByPlaces;
 use App\Livewire\Admin\Reports;
 use App\Livewire\Buildings;
 use App\Livewire\Campuses;

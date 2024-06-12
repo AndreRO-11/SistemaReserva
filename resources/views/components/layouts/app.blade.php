@@ -23,7 +23,6 @@
 <body>
 
     <div>
-
         <header class="header fixed-top">
             <div class="container_header">
                 <a href="https://vrip.ubiobio.cl/inicio/">
@@ -33,64 +32,60 @@
             </div>
             <nav class="navbar navbar-expand-lg">
                 <div class="container-fluid">
-                    @auth
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                            aria-expanded="false" aria-label="Toggle navigation">
-                            <span><i class="bi bi-list"></i></span>
-                        </button>
-                        <div class="container">
-                            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                                <ul class="navbar-nav mb-2 mb-lg-0 mx-auto">
-                                    <li class="nav-item">
-                                        <a wire:navigate class="nav-link" href="/users">USUARIOS</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a wire:navigate class="nav-link" href="/reports">REPORTES</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a wire:navigate class="nav-link" href="/reservations">RESERVAS</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a wire:navigate class="nav-link" href="/places">ESPACIOS</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a wire:navigate class="nav-link" href="/services">SERVICIOS</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a wire:navigate class="nav-link" href="buildings">EDIFICIOS</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a wire:navigate class="nav-link" href="campus">SEDES</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a wire:navigate class="nav-link" href="/seats">ASIENTOS</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a wire:navigate class="nav-link" href="/types">TIPO DE ESPACIOS</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="/logout" class="btn"><i class="bi bi-door-closed"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    @endauth
-                    @guest
-                        <div class="container">
-                            <div class="boton_login text-end">
-                                <a href="/login" class="btn" style="font-size: small">INICIAR SESIÓN</i></a>
-                            </div>
-                        </div>
-                    @endguest
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                        <span style="color: white;"><i class="bi bi-list"></i></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        @auth
+                            <ul class="navbar-nav mb-2 mb-lg-0 m-auto">
+                                <li class="nav-item">
+                                    <a wire:navigate class="nav-link" href="/users">USUARIOS</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a wire:navigate class="nav-link" href="/reports">REPORTES</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a wire:navigate class="nav-link" href="/reservations">RESERVAS</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a wire:navigate class="nav-link" href="/places">ESPACIOS</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a wire:navigate class="nav-link" href="/services">SERVICIOS</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a wire:navigate class="nav-link" href="buildings">EDIFICIOS</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a wire:navigate class="nav-link" href="campus">SEDES</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a wire:navigate class="nav-link" href="/seats">ASIENTOS</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a wire:navigate class="nav-link" href="/types">TIPO DE ESPACIOS</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/logout" class="btn"><i class="bi bi-door-closed"></i></a>
+                                </li>
+                            </ul>
+                        @endauth
+                        @guest
+                            <ul class="navbar-nav mb-2 mb-lg-0 ms-auto">
+                                <li class="nav-item ms-auto">
+                                    <a href="/login" class="btn" style="font-size: small">INICIAR SESIÓN</i></a>
+                                </li>
+                            </ul>
+                        @endguest
+                    </div>
                 </div>
             </nav>
         </header>
 
-        <div class="contenido">
+        <div class="container">
             {{ $slot }}
-
-            {{-- <x-toaster-hub /> --}}
         </div>
 
         <footer class="footer fixed-bottom">
@@ -100,7 +95,6 @@
                 @endauth
             </div>
         </footer>
-
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
@@ -109,7 +103,6 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <script>
-
         // TOASTS
         document.addEventListener('livewire:initialized', function() {
             Livewire.on('success', function(message) {
