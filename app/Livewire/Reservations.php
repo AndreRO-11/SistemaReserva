@@ -66,26 +66,29 @@ class Reservations extends Component
 
     public function update()
     {
-        $this->validate([
+        $validated = $this->validate([
             'reservationForm.activity' => 'required',
             'reservationForm.assistants' => 'required',
         ]);
 
-        $id = $this->reservationId;
+        if ($validated) {
+            $id = $this->reservationId;
 
-        $reservation = Reservation::find($id);
+            $reservation = Reservation::find($id);
 
-        $reservation->comment = $this->reservationForm['comment'];
-        $reservation->activity = $this->reservationForm['activity'];
-        $reservation->associated_project = $this->reservationForm['associated_project'];
-        $reservation->assistants = $this->reservationForm['assistants'];
-        $reservation->services()->sync($this->selectedServices);
-        $reservation->save();
+            $reservation->comment = $this->reservationForm['comment'];
+            $reservation->activity = $this->reservationForm['activity'];
+            $reservation->associated_project = $this->reservationForm['associated_project'];
+            $reservation->assistants = $this->reservationForm['assistants'];
+            $reservation->services()->sync($this->selectedServices);
+            $reservation->save();
 
-        $this->close();
-
-        $this->dispatch('success', 'Reservación actualizada.');
-        $this->mount();
+            $this->close();
+            $this->dispatch('success', 'Reservación actualizada.');
+            $this->mount();
+        } else {
+            $this->dispatch('failed', 'Error en datos');
+        }
     }
 
     public function delete($id)

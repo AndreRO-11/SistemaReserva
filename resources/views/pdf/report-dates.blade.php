@@ -7,20 +7,23 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
     <style>
-        html {
-            margin: 0;
+        @page {
+            /* margin: 100px 50px 20px; */
+            /* margin: 20px 50px; */
+            margin: 20px 0;
         }
 
-        header {
+        body {
+            margin: 20px 50px;
+        }
+
+        #header {
             display: block;
-            width: 100%;
             height: 100px;
             position: fixed;
-            top: 0;
-        }
-
-        .container {
-            margin: 2px 50px;
+            top: -100px;
+            left: -50px;
+            right: -50px;
         }
 
         .report_header_container {
@@ -29,27 +32,30 @@
             justify-content: space-between;
         }
 
-        .report_break {
+        #footer {
             display: block;
-            width: 100%;
-            margin-top: 100px;
-            background-color: #1B2E51;
-            height: 15px;
-        }
-
-        .report_footer {
-            display: block;
-            width: 100%;
             background-color: #1B2E51;
             height: 20px;
             position: fixed;
-            bottom: 0;
+            bottom: -20px;
+            left: -50px;
+            right: -50px;
         }
 
         table {
             width: 100%;
             border-top: 1px solid black;
             border-bottom: 1px solid black;
+        }
+
+        .break {
+            display: block;
+            background-color: #1B2E51;
+            position: fixed;
+            top: -20px;
+            height: 20px;
+            left: -50px;
+            right: -50px;
         }
 
         .text_left th {
@@ -61,14 +67,15 @@
 
 <body>
 
-    {{-- <header>
+    {{-- <div id="header">
         <div class="report_header_container">
-            <img src="{{ asset('/images/Logo_VRIP.png') }}" alt="">
-            <img src="{{ asset('/images/escudo-color-gradiente.png') }}" alt="">
+            {{-- <img src="{{ public_path('images/Logo_VRIP.png') }}" alt="">
+            <img src="{{ public_path('images/escudo-color-gradiente.png') }}" alt="">
         </div>
-    </header> --}}
+    </div> --}}
+    <div class="break"></div>
 
-    <div class="report_break" style="margin-top: 0"></div>
+    <div id="footer"></div>
 
     <div class="container">
         <h2>Reservas Campus {{ $campus->campus }}, {{ $campus->city }}</h2>
@@ -170,8 +177,6 @@
         @endif
 
     </div>
-
-    <div class="report_footer"></div>
 
 </body>
 

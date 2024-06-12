@@ -1,4 +1,4 @@
-.contenido {
+.container {
     padding-top: 200px;
     padding-bottom: 75px;
 }
@@ -53,15 +53,15 @@
 .navbar a,
 i {
     color: white;
-
     font-size: medium;
     font-weight: bold;
 }
-.navbar span {
-    color: white;
-    font-size: larger;
+
+.navbar-collapse li {
+    margin-left: 20px;
 }
-.navbar .container {
+
+.navbar .navbar-collapse {
     background-color: #1b2e51;
 }
 /* Fin header */
