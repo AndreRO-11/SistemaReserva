@@ -27,9 +27,9 @@ class Users extends Component
 
     protected $messages = [
         'name.required' => 'El campo de nombre es obligatorio.',
-        'email.unique' => 'Email ya registrado.',
-        'email.required' => 'El campo de email es obligatorio.',
-        'user.email.ends_with' => 'El email debe terminar en @...ubiobio.cl',
+        'email.unique' => 'Correo ya registrado.',
+        'email.required' => 'El campo de correo es obligatorio.',
+        'user.email.ends_with' => 'El correo debe terminar en @...ubiobio.cl',
         'password.required' => 'El campo contraseña es obligatorio.',
         'password.min' => 'Mínimo 6 caracteres.',
         'campus_id.required' => 'Seleccione una sede.',

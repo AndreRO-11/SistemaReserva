@@ -12,6 +12,7 @@ use App\Livewire\Reservations;
 use App\Livewire\Seats;
 use App\Livewire\Services;
 use App\Livewire\Admin\Users;
+use App\Livewire\Auth\ResetPassword;
 use App\Livewire\Types;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +32,7 @@ Route::get('/', function () {
 });
 
 Route::get('/login', Login::class);
+Route::get('password/reset/{token}', ResetPassword::class)->name('password.reset');
 Route::get('/places', Places::class)->name('places');
 
 // Admin

@@ -8,10 +8,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 use App\Models\User;
+use Illuminate\Support\Facades\Password;
 
 class Login extends Component
 {
     public $registerForm = false;
+
+    public $forgotPassword = false;
+    public $email;
 
     // Atributos para login
     public $user = [
@@ -22,6 +26,12 @@ class Login extends Component
 
     // Atributos para register
     public $passwordConfirmed, $name, $city;
+
+    protected $messages = [
+        'user.email' => 'Credenciales no válidas.',
+        'email.required' => 'El campo de correo es olbigatorio.',
+        'email.email' => 'Ingrese un correo válido.',
+    ];
 
     public function register()
     {
@@ -41,7 +51,6 @@ class Login extends Component
                 'city' => $this->city
             ]);
         }
-
     }
 
     public function login(Request $request)
@@ -63,10 +72,7 @@ class Login extends Component
                 $request->session()->regenerate();
                 return redirect()->to('/');
             }
-        } else {
-            $this->addError('email', 'Credenciales no válidas.');
         }
-
     }
 
     public function logout(Request $request)
@@ -75,6 +81,22 @@ class Login extends Component
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->to('/');
+    }
+
+    public function sendPasswordResetLink()
+    {
+        $this->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $status = Password::sendResetLink(['email' => $this->email]);
+
+        if ($status === Password::RESET_LINK_SENT) {
+            $this->dispatch('success', 'Enlace enviado.');
+        } else {
+            $this->addError('email', __($status));
+            $this->dispatch('failed', 'Error en datos.');
+        }
     }
 
     public function toggleRegisterForm()
