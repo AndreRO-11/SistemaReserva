@@ -1,6 +1,6 @@
 <div>
 
-    <div class="card mt-3">
+    <div class="card mt-2">
         <div class="card-body">
             <div class="row row-cols-1 row-cols-md-4 justify-content-center">
                 <div class="col mb-2">
@@ -68,7 +68,7 @@
                     </tbody>
                 </table>
             </div>
-            <div wire:loading wire:target="filterByCampus" class="spinner_container">
+            <div wire:loading wire:target="filterByCampus, filterByActive" class="spinner_container">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>

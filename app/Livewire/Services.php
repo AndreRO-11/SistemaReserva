@@ -25,13 +25,16 @@ class Services extends Component
 
     protected $messages = [
         'service.service.required' => 'El campo de servicio es obligatorio.',
+        'service.service.unique' => 'Servicio ya registrado.',
         'serviceEdit.service.unique' => 'Servicio ya registrado.',
     ];
 
     public function store()
     {
+        $service = $this->service['service'];
+
         $this->validate([
-            'service.service' => 'required',
+            'service.service' => 'required|unique:services,service,' . $service,
         ]);
 
         $serviceExists = Service::where('service', $this->service['service'])->exists();
@@ -45,7 +48,6 @@ class Services extends Component
             $this->reset();
             $this->dispatch('success', 'Servicio agregado correctamente.');
         } else {
-            $this->addError('service.service', 'Servicio ya registrado.');
             $this->dispatch('failed', 'Error en datos.');
         }
     }
@@ -71,11 +73,14 @@ class Services extends Component
 
         $serviceUpdate->service = $this->serviceEdit['service'];
         $serviceUpdate->description = $this->serviceEdit['description'];
-        $serviceUpdate->save();
 
-        $this->reset();
-        $this->editService = null;
-        $this->dispatch('success', 'Servicio actualizado correctamente.');
+        if ($serviceUpdate->save()) {
+            $this->reset();
+            $this->editService = null;
+            $this->dispatch('success', 'Servicio actualizado correctamente.');
+        } else {
+            $this->dispatch('failed', 'Error en datos.');
+        }
     }
 
     public function close()
@@ -92,7 +97,7 @@ class Services extends Component
         $service->active = false;
         $service->save();
         $this->resetPage();
-        $this->dispatch('warning', 'Servicio desactivado.');
+        $this->dispatch('success', 'Servicio desactivado.');
     }
 
     public function setActive($id)

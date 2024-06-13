@@ -23,6 +23,7 @@ class Reservations extends Component
 
     // FILTROS
     public $statusFilter = null, $campusFilter, $placeFilter = null, $uniquePlaces, $dateFilter = null, $activeFilter = false;
+    public $search = '';
     public $reservationsCount;
 
     use WithPagination;
@@ -97,7 +98,7 @@ class Reservations extends Component
         $reservation->active = false;
         $reservation->save();
 
-        $this->dispatch('warning', 'Reservación desactivada.');
+        $this->dispatch('success', 'Reservación desactivada.');
     }
 
     public function setActive($id)
@@ -228,6 +229,12 @@ class Reservations extends Component
         if ($this->dateFilter != null) {
             $reservationsQuery->whereHas('dates', function ($query) {
                 $query->where('date', $this->dateFilter);
+            });
+        }
+
+        if ($this->search) {
+            $reservationsQuery->whereHas('client', function ($query) {
+                $query->where('name', 'like', '%' . $this->search . '%');
             });
         }
 

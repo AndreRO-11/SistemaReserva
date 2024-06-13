@@ -22,7 +22,7 @@
     </div>
 
     <div>
-        <div class="card mt-3">
+        <div class="card mt-2">
             <div class="table-responsive card-body">
                 <table class="table table-hover align-middle">
                     <thead>
@@ -60,11 +60,12 @@
 
                                                 @if ($type->active)
                                                     <button
-                                                        wire:confirmation="¿Esta seguro de eliminar este tipo de espacio?"
+                                                        wire:confirm="¿Está seguro de eliminar el tipo de espacio seleccionado?"
                                                         wire:click="delete({{ $type->id }})"
                                                         class="btn btn-danger"><i class="bi bi-trash3"></i></button>
                                                 @else
                                                     <button wire:click="setActive({{ $type->id }})"
+                                                        wire:confirm="¿Está seguro de activar el tipo de espacio seleccionado?"
                                                         class="btn btn-success"><i class="bi bi-check-lg"></i></button>
                                                 @endif
                                             @else

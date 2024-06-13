@@ -1,17 +1,11 @@
 <div>
 
     @if (!$dataReservation)
-        <div class="d-grid gap-2 d-md-flex justify-content-center">
-            <div wire:loading wire:target="dateFilter, campusFilter, filterByStatus, filterByActive"
-                class="spinner_container">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden"></span>
-                </div>
-            </div>
-            <div>
+        <div class="d-md-flex gap-2 justify-content-center">
+            <div class="d-grid mt-2">
                 <input wire:model.live="dateFilter" class="form-control" type="date">
             </div>
-            <div>
+            <div class="d-grid mt-2">
                 <select wire:model="placeFilter" wire:change="filterByPlace" class="form-select">
                     <option value="">Espacio</option>
                     @foreach ($uniquePlaces as $place)
@@ -19,14 +13,14 @@
                     @endforeach
                 </select>
             </div>
-            <div>
+            <div class="d-grid mt-2">
                 <select wire:model="campusFilter" wire:change="filterByCampus" class="form-select">
                     @foreach ($campuses as $campus)
                         <option value="{{ $campus->id }}">{{ $campus->campus }}, {{ $campus->city }}</option>
                     @endforeach
                 </select>
             </div>
-            <div>
+            <div class="d-flex gap-2 justify-content-between mt-2">
                 <button wire:click="filterByStatus('PENDIENTE')"
                     class="btn btn-secondary @if ($statusFilter === 'PENDIENTE') active @endif" data-bs-toggle="button"
                     style="font-weight: bold;">PENDIENTE</button>
@@ -37,17 +31,22 @@
                     class="btn btn-danger @if ($statusFilter === 'RECHAZADO') active @endif" data-bs-toggle="button"
                     style="font-weight: bold;">RECHAZADO</button>
             </div>
-            <button wire:click="filterByActive" class="btn btn-warning" style="font-weight: bold;">
-                @if ($activeFilter)
-                    <i class="bi bi-toggle-off text-dark"></i>
-                @else
-                    <i class="bi bi-toggle-on text-dark"></i>
-                @endif
-                ACTIVOS
-            </button>
+            <div class="d-grid mt-2">
+                <button wire:click="filterByActive" class="btn btn-warning" style="font-weight: bold;">
+                    @if ($activeFilter)
+                        <i class="bi bi-toggle-off text-dark"></i>
+                    @else
+                        <i class="bi bi-toggle-on text-dark"></i>
+                    @endif
+                    ACTIVOS
+                </button>
+            </div>
+        </div>
+        <div class="d-grid mt-2">
+            <input wire:model.live="search" class="form-control" placeholder="Búsqueda por cliente" type="text">
         </div>
 
-        <div class="card mt-3">
+        <div class="card mt-2">
             <div class="table-responsive card-body">
                 <table class="table table-sm table-hover align-middle">
                     <thead>
@@ -108,9 +107,11 @@
                                                 class="btn btn-primary"><i class="bi bi-eye"></i></button>
                                             @if ($reservation->active)
                                                 <button wire:click="delete({{ $reservation->id }})"
+                                                    wire:confirm="¿Está seguro de eliminar la reserva seleccionada?"
                                                     class="btn btn-danger"><i class="bi bi-trash3"></i></button>
                                             @else
                                                 <button wire:click="setActive({{ $reservation->id }})"
+                                                    wire:confirm="¿Está seguro de activar la reserva seleccionada?"
                                                     class="btn btn-success"><i class="bi bi-check-lg"></i></button>
                                             @endif
                                         </div>
@@ -134,7 +135,7 @@
 
     {{-- VER RESERVA --}}
     @if ($dataReservation)
-        <div class="mt-4">
+        <div class="mt-2">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex">
@@ -232,7 +233,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="opciones_boton mt-3">
+                        <div class="opciones_boton mt-2">
                             <button wire:loading.attr="disabled" wire:click="statusApproved({{ $reservation->id }})"
                                 class="btn btn-success" style="font-weight: bold;">APROBAR</button>
                             <button wire:loading.attr="disabled" wire:click="statusReject({{ $reservation->id }})"
@@ -318,12 +319,12 @@
                                 </div>
                             </div>
                         </div>
-                        <div wire:loading class="spinner_container">
+                        <div wire:loading wire:target="update" class="spinner_container">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
                         </div>
-                        <div class="opciones_boton mt-3">
+                        <div class="opciones_boton mt-2">
                             <button wire:loading.attr="disabled" wire:click="update" class="btn btn-primary"
                                 style="font-weight: bold;">ACTUALIZAR</button>
                         </div>

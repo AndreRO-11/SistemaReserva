@@ -27,7 +27,7 @@
         </div>
     </div>
 
-    <div class="card mt-3">
+    <div class="card mt-2">
         <div class="table-responsive card-body">
             <table class="table table-sm table-hover align-middle">
                 <thead>
@@ -74,11 +74,12 @@
                                             <button wire:click="edit({{ $building->id }})" class="btn btn-warning"><i
                                                     class="bi bi-pencil-square text-dark"></i></button>
                                             @if ($building->active)
-                                                <button wire:confirmation="¿Esta seguro de eliminar este Edificio?"
+                                                <button wire:confirm="¿Está seguro de elimianar el edificio seleccionado?"
                                                     wire:click="delete({{ $building->id }})" class="btn btn-danger"><i
                                                         class="bi bi-trash3"></i></button>
                                             @else
                                                 <button wire:click="setActive({{ $building->id }})"
+                                                    wire:confirm="¿Está seguro de activar el edificio seleccionado?"
                                                     class="btn btn-success"><i class="bi bi-check-lg"></i></button>
                                             @endif
                                         @else

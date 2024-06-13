@@ -105,7 +105,7 @@ class Users extends Component
         $user->active = false;
         $user->save();
         $this->resetPage();
-        $this->dispatch('warning', 'Usuario desactivado.');
+        $this->dispatch('success', 'Usuario desactivado.');
     }
 
     public function setActive($id)
