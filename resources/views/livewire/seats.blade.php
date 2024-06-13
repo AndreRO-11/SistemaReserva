@@ -21,7 +21,7 @@
         </div>
     </div>
 
-    <div class="card mt-3">
+    <div class="card mt-2">
         <div class="table-responsive card-body">
             <table class="table table-hover align-middle">
                 <thead>
@@ -57,11 +57,12 @@
                                                     class="bi bi-pencil-square text-dark"></i></button>
                                             @if ($seat->active)
                                                 <button
-                                                    wire:confirmation="¿Esta seguro de eliminar este tipo de asiento?"
+                                                    wire:confirm="¿Está seguro de eliminar el tipo de asiento seleccionado?"
                                                     wire:click="delete({{ $seat->id }})"
                                                     class="btn btn-danger"><i class="bi bi-trash3"></i></button>
                                             @else
                                                 <button wire:click="setActive({{ $seat->id }})"
+                                                    wire:confirm="¿Está seguro de activar el tipo de asiento seleccionado?"
                                                     class="btn btn-success"><i class="bi bi-check-lg"></i></button>
                                             @endif
                                         @else

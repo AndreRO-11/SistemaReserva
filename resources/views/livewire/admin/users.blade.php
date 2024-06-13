@@ -46,7 +46,7 @@
         </div>
     </div>
 
-    <div class="card mt-3">
+    <div class="card mt-2">
         <div class="table-responsive card-body">
             <table class="table table-hover align-middle">
                 <thead>
@@ -129,12 +129,14 @@
 
                                             @if (!$user->active)
                                                 <button wire:click="setActive({{ $user->id }})"
+                                                    wire:confirm="¿Está seguro de activar el usuario seleccionado?"
                                                     class="btn btn-success">
                                                     <i class="bi bi-check-lg"></i>
                                                 </button>
                                             @else
                                                 @if (!$changePassword)
                                                     <button wire:click="setInactive({{ $user->id }})"
+                                                        wire:confirm="¿Está seguro de eliminar el usuario seleccionado?"
                                                         class="btn btn-danger">
                                                         <i class="bi bi-trash3"></i>
                                                     </button>

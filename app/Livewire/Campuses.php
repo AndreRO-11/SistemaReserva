@@ -51,12 +51,15 @@ class Campuses extends Component
             $campusStore->campus = $campus;
             $campusStore->address = $address;
             $campusStore->city = $city;
-            $campusStore->save();
 
-            $this->reset();
-            $this->dispatch('success', 'Sede agregada correctamente.');
+            if ($campusStore->save()) {
+                $this->reset();
+                $this->dispatch('success', 'Sede agregada correctamente.');
+            } else {
+                $this->addError('campus.campus', 'Sede ya registrada.');
+                $this->dispatch('failed', 'Error en datos.');
+            }
         } else {
-            $this->addError('campus.campus', 'Sede ya registrada.');
             $this->dispatch('failed', 'Error en datos.');
         }
     }
@@ -73,6 +76,8 @@ class Campuses extends Component
 
     public function update()
     {
+        $id = $this->editCampus;
+
         $this->validate([
             'campusEdit.campus'=> 'required',
             'campusEdit.address'=> 'required',
@@ -82,6 +87,10 @@ class Campuses extends Component
         $campusExists = Campus::where('campus', $this->campusEdit['campus'])
             ->where('city', $this->campusEdit['city'])
             ->exists();
+
+        $campusExists = Campus::where('campus', $this->campusEdit['campus'])
+            ->where('id', '!=', $id)
+            ->first();
 
         if (!$campusExists) {
             $id = $this->editCampus;
@@ -94,13 +103,16 @@ class Campuses extends Component
             $campusUpdate->campus = $campus;
             $campusUpdate->address = $address;
             $campusUpdate->city = $city;
-            $campusUpdate->save();
 
-            $this->reset();
-            $this->editCampus = null;
-            $this->dispatch('success', 'Sede actualizada correctamente.');
+            if ($campusUpdate->save()) {
+                $this->reset();
+                $this->editCampus = null;
+                $this->dispatch('success', 'Sede actualizada correctamente.');
+            } else {
+                $this->addError('campusEdit.campus', 'Sede ya registrada.');
+                $this->dispatch('failed', 'Error en datos.');
+            }
         } else {
-            $this->addError('campusEdit.campus', 'Sede ya registrada.');
             $this->dispatch('failed', 'Error en datos.');
         }
     }
@@ -111,7 +123,7 @@ class Campuses extends Component
         $campus->active = false;
         $campus->save();
         $this->resetPage();
-        $this->dispatch('warning', 'Sede desactivada.');
+        $this->dispatch('success', 'Sede desactivada.');
     }
 
     public function setActive($id)
@@ -128,6 +140,7 @@ class Campuses extends Component
         $this->editCampus = null;
         $this->reset();
         $this->resetPage();
+        $this->dispatch('warning', 'No se han guardado los cambios.');
     }
 
     public function filterByActive()

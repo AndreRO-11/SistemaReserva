@@ -57,7 +57,7 @@
     @endif
 
     @if ($placesCount === 0 && ($campusFilter != null || $buildingFilter === null))
-        <div wire:loading.class="invisible" class="login_container mt-3">
+        <div wire:loading.class="invisible" class="login_container mt-2">
             <h5>No existen espacios registrados.</h5>
         </div>
     @else
@@ -67,7 +67,7 @@
                     <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
-            <div wire:loading.class="invisible" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 my-auto">
+            <div wire:loading.class="invisible" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 m-auto">
                 @foreach ($unreservedPlaces as $place)
                     @if ($place->availableHours > 0)
                         <div class="col">
@@ -100,7 +100,8 @@
                                     </div>
                                     <div class="mt-2 opciones_boton">
                                         @if ($place->active)
-                                            <button wire:click="book({{ $place->id }})" class="btn btn-success" style="font-weight: bold;">
+                                            <button wire:click="book({{ $place->id }})" class="btn btn-success"
+                                                style="font-weight: bold;">
                                                 RESERVAR
                                             </button>
                                         @endif
@@ -110,9 +111,11 @@
                                                     class="bi bi-pencil-square text-dark"></i></button>
                                             @if ($place->active)
                                                 <button wire:click="delete({{ $place->id }})"
+                                                    wire:confirm="¿Está seguro de eliminar el espacio seleccionado?"
                                                     class="btn btn-danger"><i class="bi bi-trash3"></i></button>
                                             @else
                                                 <button wire:click="setActive({{ $place->id }})"
+                                                    wire:confirm="¿Está seguro de activar el espacio seleccionado?"
                                                     class="btn btn-success"><i class="bi bi-check-lg"></i></button>
                                             @endif
                                         @endauth
@@ -123,7 +126,7 @@
                     @endif
                 @endforeach
             </div>
-            <div class="mt-3">
+            <div class="mt-2">
                 {{ $unreservedPlaces->links() }}
             </div>
         @endif
@@ -157,8 +160,8 @@
                         </div>
                         <div class="mt-2">
                             <label class="form-label" for="place.capacity">Capacidad</label>
-                            <input wire:model="place.capacity" id="place.capacity" class="form-control"
-                                type="number" required>
+                            <input wire:model="place.capacity" id="place.capacity" class="form-control" type="number"
+                                required>
                         </div>
                         <div class="mt-2">
                             <label class="form-label" for="place.floor">Piso</label>
@@ -189,8 +192,7 @@
                     <div class="col">
                         <div class="mt-2">
                             <label class="form-label" for="place.building_id">Ubicación</label>
-                            <select wire:model="place.building_id" id="place.building_id"
-                                class="form-select">
+                            <select wire:model="place.building_id" id="place.building_id" class="form-select">
                                 <option value="" disabled>Seleccione una ubicación.</option>
                                 @foreach ($buildings as $building)
                                     <option value="{{ $building->id }}" required>
@@ -205,12 +207,10 @@
                             <ul style="list-style-type: none;">
                                 @foreach ($details as $detail)
                                     <li>
-                                        <label class="form-check-label"
-                                            for="selectedDetails{{ $detail->id }}">
+                                        <label class="form-check-label" for="selectedDetails{{ $detail->id }}">
                                             <input wire:model="selectedDetails"
-                                                id="selectedDetails{{ $detail->id }}"
-                                                class="form-check-input" type="checkbox"
-                                                value="{{ $detail->id }}">
+                                                id="selectedDetails{{ $detail->id }}" class="form-check-input"
+                                                type="checkbox" value="{{ $detail->id }}">
                                             {{ $detail->detail }}
                                         </label>
                                     </li>
@@ -224,13 +224,13 @@
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
-                <div class="opciones_boton mt-3">
+                <div class="opciones_boton mt-2">
                     @if (!$updatePlace)
-                        <button wire:loading.attr="disabled" wire:click="store"
-                            class="btn btn-primary" style="font-weight: bold;">AGREGAR</button>
+                        <button wire:loading.attr="disabled" wire:click="store" class="btn btn-primary"
+                            style="font-weight: bold;">AGREGAR</button>
                     @else
-                        <button wire:loading.attr="disabled" wire:click="update"
-                            class="btn btn-primary" style="font-weight: bold;">ACTUALIZAR</button>
+                        <button wire:loading.attr="disabled" wire:click="update" class="btn btn-primary"
+                            style="font-weight: bold;">ACTUALIZAR</button>
                     @endif
                 </div>
             </div>
@@ -269,18 +269,18 @@
                         <div class="mt-2">
                             <label class="form-label" for="reservation.email">Correo</label>
                             <input wire:model="reservation.email" id="reservation.email"
-                                class="form-control @error('reservation.email') is-invalid @enderror"
-                                type="text" required>
+                                class="form-control @error('reservation.email') is-invalid @enderror" type="text"
+                                required>
                         </div>
                         <div class="mt-2">
                             <label class="form-label" for="reservation.userType">Cargo</label>
-                            <input wire:model="reservation.userType" id="reservation.userType"
-                                class="form-control" type="text" required>
+                            <input wire:model="reservation.userType" id="reservation.userType" class="form-control"
+                                type="text" required>
                         </div>
                         <div class="mt-2">
                             <label class="form-label" for="reservation.activity">Actividad</label>
-                            <input wire:model="reservation.activity" id="reservation.activity"
-                                class="form-control" type="text" required>
+                            <input wire:model="reservation.activity" id="reservation.activity" class="form-control"
+                                type="text" required>
                         </div>
                         <div class="mt-2">
                             <label class="form-label" for="reservation.assistants">Cantidad
@@ -296,8 +296,8 @@
                             <label class="form-check-label" for="reservation.associated_project">Proyecto
                                 asociado (Si
                                 hay)</label>
-                            <input wire:model="reservation.associated_project"
-                                id="reservation.associated_project" class="form-check-input" type="checkbox">
+                            <input wire:model="reservation.associated_project" id="reservation.associated_project"
+                                class="form-check-input" type="checkbox">
                         </div>
                     </div>
                     <div class="col">
@@ -347,27 +347,12 @@
                         <span class="visually-hidden"></span>
                     </div>
                 </div>
-                <div class="opciones_boton mt-3">
-                    <button wire:loading.attr="disabled" wire:click="bookSave"
-                        class="btn btn-primary" style="font-weight: bold;">RESERVAR</button>
+                <div class="opciones_boton mt-2">
+                    <button wire:loading.attr="disabled" wire:click="bookSave" class="btn btn-primary"
+                        style="font-weight: bold;">RESERVAR</button>
                 </div>
             </div>
         </div>
     @endif
-
-    <script>
-        document.addEventListener('livewire:load', function() {
-            function updatePerPage() {
-                const cardHeight = 100; // Ajusta según la altura de tu card
-                const windowHeight = window.innerHeight;
-                const perPage = Math.floor(windowHeight / cardHeight);
-
-                @this.set('perPage', perPage);
-            }
-
-            updatePerPage();
-            window.addEventListener('resize', updatePerPage);
-        });
-    </script>
 
 </div>

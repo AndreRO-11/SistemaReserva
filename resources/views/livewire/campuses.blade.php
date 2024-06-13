@@ -1,7 +1,6 @@
 <div>
 
     <div class="d-grid gap-2 d-md-flex justify-content-center">
-    {{-- <div class="row row-cols-1 row-cols-md-4 justify-content-center"> --}}
         <div>
             <input wire:model="campus.campus" type="text"
                 class="form-control @error('campus.campus') is-invalid @enderror" placeholder="Sede">
@@ -37,9 +36,9 @@
         </div>
     </div>
 
-    <div class="card mt-3">
+    <div class="card mt-2">
         <div class="table-responsive card-body">
-            <table class="table table-hover align-middle">
+            <table class="table table-sm table-hover align-middle">
                 <thead>
                     <tr>
                         <th scope="col">Sede</th>
@@ -66,11 +65,12 @@
                                                 class="btn btn-warning"><i
                                                     class="bi bi-pencil-square text-dark"></i></button>
                                             @if ($campus->active)
-                                                <button wire:confirmation="¿Esta seguro de eliminar este campus?"
+                                                <button wire:confirm="¿Está seguro de eliminar la sede seleccionada?"
                                                     wire:click="delete({{ $campus->id }})"
                                                     class="btn btn-danger"><i class="bi bi-trash3"></i></button>
                                             @else
                                                 <button wire:click="setActive({{ $campus->id }})"
+                                                    wire:confirm="¿Está seguro de activar la sede seleccionada?"
                                                     class="btn btn-success"><i class="bi bi-check-lg"></i></button>
                                             @endif
                                         </div>

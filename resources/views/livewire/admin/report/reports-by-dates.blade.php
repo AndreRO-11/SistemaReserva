@@ -1,6 +1,6 @@
 <div>
 
-    <div class="card mt-3">
+    <div class="card mt-2">
         <div class="card-body">
             @if ($campuses === null)
                 <h5 class="text-center">No existen sedes registradas.</h5>

@@ -33,7 +33,6 @@ class Places extends Component
 
     public $addPlace = false, $updatePlace = false, $bookPlace = false, $placesCount;
     public $perPage = 3;
-    //protected $queryString = ['selectedDates', 'cityFilter', 'campus', 'buildingFilter', 'campusFilter', 'perPage'];
 
     use WithPagination;
 
@@ -157,9 +156,9 @@ class Places extends Component
         $place = Place::find($id);
         $place->active = false;
         $place->save();
-
+        $this->resetPage();
         $this->mount();
-        $this->dispatch('warning','Espacio desactivado.');
+        $this->dispatch('success','Espacio desactivado.');
     }
 
     public function setActive($id)
@@ -167,7 +166,7 @@ class Places extends Component
         $place = Place::find($id);
         $place->active = true;
         $place->save();
-
+        $this->resetPage();
         $this->mount();
         $this->dispatch('success','Espacio activado.');
     }
@@ -178,7 +177,7 @@ class Places extends Component
         $this->updatePlace = false;
         $this->bookPlace = false;
         $this->editPlace = null;
-
+        $this->resetPage();
         $this->reset();
         $this->mount();
     }

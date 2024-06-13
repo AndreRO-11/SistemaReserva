@@ -18,26 +18,27 @@ class Seats extends Component
 
     protected $messages = [
         'seat.required' => 'El campo de tipo de asiento es obligatorio.',
+        'seat.unique' => 'Asiento ya registrado.',
+        'seatEdit.unique' => 'Asiento ya registrado.',
+        'seatEdit.required' => 'El campo de tipo de asiento es obligatorio.',
     ];
     public function store()
     {
+        $seat = $this->seat;
+
         $this->validate([
-            'seat' => 'required',
+            'seat' => 'required|unique:seats,seat,' . $seat,
         ]);
 
-        $seatExists = Seat::where('seat', $this->seat)->exists();
+        $seat = strtoupper(preg_replace('/[^a-zA-Z0-9ñÑ\s]/', '', str_replace(['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ'], ['A', 'E', 'I', 'O', 'U', 'A', 'E', 'I', 'O', 'U', 'Ñ'], $this->seat)));
 
-        if (!$seatExists) {
-            $seat = strtoupper(preg_replace('/[^a-zA-Z0-9ñÑ\s]/', '', str_replace(['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ'], ['A', 'E', 'I', 'O', 'U', 'A', 'E', 'I', 'O', 'U', 'Ñ'], $this->seat)));
+        $seatStore = new Seat();
+        $seatStore->seat = $seat;
 
-            $seatStore = new Seat();
-            $seatStore->seat = $seat;
-            $seatStore->save();
-
+        if ($seatStore->save()) {
             $this->reset();
             $this->dispatch('success', 'Tipo de asiento agregado correctamente.');
         } else {
-            $this->addError('seat', 'Asiento ya existe.');
             $this->dispatch('failed', 'Error en datos.');
         }
     }
@@ -52,20 +53,18 @@ class Seats extends Component
 
     public function update()
     {
+        $id = $this->editSeat;
+
         $this->validate([
-            'seatEdit' => 'required'
+            'seatEdit' => 'required|unique:seats,seat,' .$id
         ]);
 
-        $id = $this->editSeat;
         $seat = strtoupper(preg_replace('/[^a-zA-Z0-9ñÑ\s]/', '', str_replace(['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ'], ['A', 'E', 'I', 'O', 'U', 'A', 'E', 'I', 'O', 'U', 'Ñ'], $this->seatEdit)));
 
-        $seatExists = Seat::where('seat' ,$this->seatEdit)->exists();
+        $seatUpdate = Seat::find($id);
+        $seatUpdate->seat = $seat;
 
-        if (!$seatExists) {
-            $seatUpdate = Seat::find($id);
-            $seatUpdate->seat = $seat;
-            $seatUpdate->save();
-
+        if ($seatUpdate->save()) {
             $this->reset();
             $this->editSeat = null;
             $this->dispatch('success', 'Tipo de asiento actualizado correctamente.');
@@ -80,6 +79,7 @@ class Seats extends Component
         $this->editSeat = null;
         $this->reset();
         $this->resetPage();
+        $this->dispatch('warning', 'No se han guardado los cambios.');
     }
 
     public function delete($id)
@@ -88,7 +88,7 @@ class Seats extends Component
         $seat->active = false;
         $seat->save();
         $this->resetPage();
-        $this->dispatch('warning', 'Tipo de asiento desactivado.');
+        $this->dispatch('success', 'Tipo de asiento desactivado.');
     }
 
     public function setActive($id)
