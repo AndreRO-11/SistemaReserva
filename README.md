@@ -66,7 +66,7 @@ php artisan serve
 ```
 
 ## Nota:
-Este proyecto cuenta con seeders para poblar las tablas de hours, details, campus además de incorporar un usuario administrador que permitirá infresar al sistema y registrar un nuevo usuario para luego desactivar manualmente este. Las credenciales de ingreso son las siguiente:
+Este proyecto cuenta con seeders para poblar las tablas de hours, details y campus además de incorporar un usuario administrador que permitirá ingresar al sistema y registrar un nuevo usuario para luego desactivar manualmente este. Las credenciales de ingreso son las siguiente:
 
 Usuario: admin@admin.com
 
