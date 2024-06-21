@@ -60,7 +60,20 @@ npm install
 npm run dev
 ```
 
-### 7. Inicio del servidor.
+### 7. Configuración para funcionamiento correcto del envío de correos
+Se debe actualizar los siguientes campos en el archivo .env con los datos correspondientes del correo a utilizar.
+```
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+### 8. Inicio del servidor.
 ```
 php artisan serve
 ```
